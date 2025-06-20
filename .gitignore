@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+
+# C++ object and binary files
+*.o
+*.obj
+*.exe
+*.dll
+*.a
+*.lib
+*.out
+
+# Python virtual environments
+venv/
+.venv/
+ENV/
+env/
+
+# PyCharm IDE files
+.idea/
+*.iml
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Gurobi / solver-specific temp files
+gurobi.log
+gurobi.lic
+*.lp
+*.mps
+*.sol
+*.log
+
+# Ruff and linting caches
+ruff_cache/
+.cache/
+*.ruff
+ruff.toml
+
+# Dataset and experiment outputs
+Experiments/
+**/Results/
+**/Logs/
+**/Checkpoints/
+*.npy
+*.npz
+*.pkl
+*.csv
+
+# Temporary or debug files
+*.tmp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
+
+# VSCode settings
+.vscode/
