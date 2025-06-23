@@ -27,6 +27,6 @@ jobs:
           pip install -e .[dev]
           pip install pytest
 
-      - name: 🧪 Run Pytest
+      - name: Run Pytest
         run: |
           pytest --disable-warnings -q
