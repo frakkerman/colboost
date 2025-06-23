@@ -55,6 +55,7 @@ Experiments/
 *.npz
 *.pkl
 *.csv
+scratch.py
 
 # Temporary or debug files
 *.tmp

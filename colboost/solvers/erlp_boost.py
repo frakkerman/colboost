@@ -17,6 +17,7 @@ class ERLPBoost(Solver):
     Entropy Regularized LPBoost. Lecture Notes in Computer Science, vol 5254.
     https://doi.org/10.1007/978-3-540-87987-9_23
     """
+
     def __init__(self):
         super().__init__()
 
@@ -27,7 +28,7 @@ class ERLPBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int
+        seed: int,
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],

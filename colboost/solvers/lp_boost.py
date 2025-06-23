@@ -16,6 +16,7 @@ class LPBoost(Solver):
     Linear Programming Boosting via Column Generation.
     Machine Learning, 46, 225–254 (2002).
     """
+
     def __init__(self):
         super().__init__()
 
@@ -26,7 +27,7 @@ class LPBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int
+        seed: int,
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],

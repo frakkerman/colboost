@@ -14,6 +14,7 @@ class QRLPBoost(Solver):
 
     Reference: Custom boosting variant.
     """
+
     def __init__(self):
         super().__init__()
 
@@ -24,7 +25,7 @@ class QRLPBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int
+        seed: int,
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],

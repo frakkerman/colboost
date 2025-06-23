@@ -29,7 +29,7 @@ class MDBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int
+        seed: int,
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],

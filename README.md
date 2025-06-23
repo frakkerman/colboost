@@ -14,7 +14,6 @@ To install:
 python3 -m venv env
 source env/bin/activate
 pip install -e .
-python -m pip install -i https://pypi.gurobi.com gurobipy
 ```
 
 To verify the installation, in the root execute:
@@ -76,6 +75,7 @@ print("Objective values:", model.objective_values_)
 print("Solve times:", model.solve_times_)    
 print("Training accuracy per iter:", model.train_accuracies_)
 print("Number of iterations:", model.n_iter_)
+print("Solver used:", model.model_name_)
 
 # compute margin distribution
 margins = model.compute_margins(X, y)

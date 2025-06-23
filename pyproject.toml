@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "LP-based ensemble learning with column generation"
 authors = [
     { name = "Fabian Akkerman" },
-    { name = "Julien Ferry" }
+    { name = "Julien Ferry" },
+    { name = "Christian Artigues" },
+    { name = "Emmanuel Hébrard" },
+    { name = "Thibaut Vidal" }
 ]
 readme = "README.md"
 requires-python = ">=3.8"

@@ -29,10 +29,10 @@ def test_dual_constraint_early_stop():
     with patch("colboost.solvers.nm_boost.NMBoost.solve") as mock:
         mock.return_value = (
             np.array([0.5, 0.5]),  # optim_weights
-            0.0,                   # beta
-            np.array([1.0]),       # objval
-            1.0,                   # time
-            0.01                   # solve_time
+            0.0,  # beta
+            np.array([1.0]),  # objval
+            1.0,  # time
+            0.01,  # solve_time
         )
 
         model = EnsembleClassifier(max_iter=5, check_dual_const=True)

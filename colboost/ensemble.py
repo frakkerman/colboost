@@ -22,8 +22,8 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         max_iter=100,
         use_crb=False,
         check_dual_const=False,
-        obj_eps=1e-4,
-        obj_check=5,
+        obj_eps=1e-6,
+        obj_check=10,
         gurobi_time_limit=60,
         gurobi_num_threads=1,
         seed=0,
@@ -47,7 +47,6 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         self.objective_values_ = []
         self.solve_times_ = []
         self.train_accuracies_ = []
-
 
     def fit(self, X, y):
         """
@@ -97,7 +96,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 hyperparam=self.tradeoff_hyperparam,
                 time_limit=self.gurobi_time_limit,
                 num_threads=self.gurobi_num_threads,
-                seed=self.seed
+                seed=self.seed,
             )
 
             self.objective_values_.append(objval)
@@ -164,7 +163,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             hyperparam=self.tradeoff_hyperparam,
             time_limit=self.gurobi_time_limit,
             num_threads=self.gurobi_num_threads,
-            seed=self.seed
+            seed=self.seed,
         )
 
         if optim_weights is None:
@@ -215,6 +214,12 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         y_pred = self.predict(X)
         return np.mean(y_pred == y)
 
+    @property
+    def model_name_(self):
+        if hasattr(self.solver, "__class__"):
+            return self.solver.__class__.__name__
+        return str(self.solver)
+
     def compute_margins(self, X, y):
         """
         Computes margin distribution y * f(x) for input data.
@@ -243,11 +248,20 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
 
     def _validate_base_learner(self, learner):
         if not hasattr(learner, "fit") or not callable(learner.fit):
-            raise TypeError(f"Base learner must implement `fit()`, got: {type(learner).__name__}")
+            raise TypeError(
+                f"Base learner must implement `fit()`, got: {type(learner).__name__}"
+            )
         if not hasattr(learner, "predict") or not callable(learner.predict):
-            raise TypeError(f"Base learner must implement `predict()`, got: {type(learner).__name__}")
-        if self.use_crb and (not hasattr(learner, "predict_proba") or not callable(learner.predict_proba)):
-            logger.warning(f"Learner {type(learner).__name__} has no `predict_proba`; using `predict()` instead.")
+            raise TypeError(
+                f"Base learner must implement `predict()`, got: {type(learner).__name__}"
+            )
+        if self.use_crb and (
+            not hasattr(learner, "predict_proba")
+            or not callable(learner.predict_proba)
+        ):
+            logger.warning(
+                f"Learner {type(learner).__name__} has no `predict_proba`; using `predict()` instead."
+            )
 
     def _validate_inputs(self, X, y):
         X = np.asarray(X)
@@ -258,7 +272,9 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         if y.ndim != 1:
             raise ValueError(f"y should be 1D (got shape {y.shape})")
         if len(X) != len(y):
-            raise ValueError(f"X and y must have the same number of samples (got {len(X)} and {len(y)})")
+            raise ValueError(
+                f"X and y must have the same number of samples (got {len(X)} and {len(y)})"
+            )
         if not np.issubdtype(X.dtype, np.number):
             raise TypeError(f"X must be numeric (got dtype {X.dtype})")
         if np.isnan(X).any() or np.isnan(y).any():
@@ -267,4 +283,3 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             raise ValueError("Only -1/+1 labels are supported.")
 
         return X, y
-

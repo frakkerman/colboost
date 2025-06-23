@@ -13,6 +13,7 @@ class NMBoost(Solver):
 
     Reference: Custom boosting variant focused on minimizing negative margin components.
     """
+
     def __init__(self):
         super().__init__()
 
@@ -23,7 +24,7 @@ class NMBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int
+        seed: int,
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],

@@ -17,6 +17,7 @@ class CGBoost(Solver):
     SIGKDD International Conference on Knowledge Discovery and Data Mining.
     https://doi.org/10.1145/1014052.1014113
     """
+
     def __init__(self):
         super().__init__()
 
@@ -27,7 +28,7 @@ class CGBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int
+        seed: int,
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],

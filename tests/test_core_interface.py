@@ -63,12 +63,14 @@ def test_invalid_labels():
     with pytest.raises(ValueError):
         model.fit(X, y)
 
+
 def test_score_with_fitted_model(sample_dataset):
     X, y = sample_dataset
     model = EnsembleClassifier(max_iter=3)
     model.fit(X, y)
     score = model.score(X, y)
     assert 0.0 <= score <= 1.0
+
 
 def test_model_attributes_after_training(sample_dataset):
     X, y = sample_dataset
@@ -82,6 +84,7 @@ def test_model_attributes_after_training(sample_dataset):
     assert isinstance(model.solve_times_, list)
     assert isinstance(model.train_accuracies_, list)
     assert isinstance(model.n_iter_, int)
+    assert isinstance(model.model_name_, str)
 
     # Check expected lengths
     assert len(model.learners) == model.n_iter_

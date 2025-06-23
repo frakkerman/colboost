@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from gurobipy import Env
 
+
 class Solver(ABC):
     """
     Abstract base class for solvers assigning ensemble weights.
