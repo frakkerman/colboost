@@ -5,12 +5,14 @@ from colboost.ensemble import EnsembleClassifier
 
 data_dir = os.path.join(os.path.dirname(__file__), "data_for_tests")
 
+
 def test_label_values_in_csv():
     for fname in os.listdir(data_dir):
         if fname.endswith(".csv"):
             df = pd.read_csv(os.path.join(data_dir, fname))
             y = df.iloc[:, -1].values
             assert set(np.unique(y)).issubset({-1, 0, 1})
+
 
 def test_fit_on_all_csvs():
     for fname in os.listdir(data_dir):

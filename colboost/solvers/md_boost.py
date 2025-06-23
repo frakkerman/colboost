@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 from typing import Optional, Tuple
-from gurobipy import GRB, Model, Env
+from gurobipy import GRB, Model
 from colboost.solvers.solver import Solver
 
 logger = logging.getLogger(__name__)
@@ -19,6 +19,7 @@ class MDBoost(Solver):
     """
 
     def __init__(self):
+        super().__init__()
         self.use_identity_approx = True
 
     def solve(
@@ -28,8 +29,7 @@ class MDBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int,
-        env: Optional[Env] = None,
+        seed: int
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],
@@ -40,7 +40,7 @@ class MDBoost(Solver):
         forest_size = len(predictions)
         data_size = len(y_train)
 
-        with Model(env=env) as model:
+        with Model(env=self.env) as model:
             model.Params.OutputFlag = 0
             model.Params.TimeLimit = time_limit
             model.Params.Threads = num_threads
@@ -55,7 +55,8 @@ class MDBoost(Solver):
 
             margin_constraints = [
                 model.addConstr(
-                    rho[i] == sum(
+                    rho[i]
+                    == sum(
                         y_train[i] * predictions[j][i] * weights[j]
                         for j in range(forest_size)
                     ),
@@ -70,8 +71,12 @@ class MDBoost(Solver):
             )
 
             if getattr(self, "use_identity_approx", True):
-                logger.info("Using identity matrix approximation for variance.")
-                quadratic_term = 0.5 * sum(rho[i] * rho[i] for i in range(data_size))
+                logger.info(
+                    "Using identity matrix approximation for variance."
+                )
+                quadratic_term = 0.5 * sum(
+                    rho[i] * rho[i] for i in range(data_size)
+                )
             else:
                 A = np.ones((data_size, data_size)) * (-1 / (data_size - 1))
                 np.fill_diagonal(A, 1)
@@ -84,8 +89,15 @@ class MDBoost(Solver):
             model.optimize()
 
             if model.status == GRB.OPTIMAL:
-                lp_weights = np.array([weights[j].X for j in range(forest_size)])
-                alpha = np.array([max(0, margin_constraints[i].Pi) for i in range(data_size)])
+                lp_weights = np.array(
+                    [weights[j].X for j in range(forest_size)]
+                )
+                alpha = np.array(
+                    [
+                        max(0, margin_constraints[i].Pi)
+                        for i in range(data_size)
+                    ]
+                )
                 beta = wsum_constraint.Pi
                 obj_val = model.ObjVal
                 solve_time = model.Runtime

@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 from typing import Optional, Tuple
-from gurobipy import GRB, Model, Env
+from gurobipy import GRB, Model
 from colboost.solvers.solver import Solver
 
 logger = logging.getLogger(__name__)
@@ -17,6 +17,8 @@ class CGBoost(Solver):
     SIGKDD International Conference on Knowledge Discovery and Data Mining.
     https://doi.org/10.1145/1014052.1014113
     """
+    def __init__(self):
+        super().__init__()
 
     def solve(
         self,
@@ -25,8 +27,7 @@ class CGBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int,
-        env: Optional[Env] = None,
+        seed: int
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],
@@ -37,7 +38,7 @@ class CGBoost(Solver):
         forest_size = len(predictions)
         data_size = len(y_train)
 
-        with Model(env=env) as model:
+        with Model(env=self.env) as model:
             model.Params.OutputFlag = 0
             model.Params.TimeLimit = time_limit
             model.Params.Threads = num_threads
@@ -60,8 +61,12 @@ class CGBoost(Solver):
 
             acc_constraints = [
                 model.addConstr(
-                    sum(y_train[i] * predictions[j][i] * weights[j] for j in range(forest_size))
-                    + xi[i] >= 1,
+                    sum(
+                        y_train[i] * predictions[j][i] * weights[j]
+                        for j in range(forest_size)
+                    )
+                    + xi[i]
+                    >= 1,
                     name=f"acc_{i}",
                 )
                 for i in range(data_size)
@@ -76,9 +81,15 @@ class CGBoost(Solver):
             model.optimize()
 
             if model.status == GRB.OPTIMAL:
-                lp_weights = np.array([weights[j].X for j in range(forest_size)])
-                alpha = np.array([max(0, acc_constraints[i].Pi) for i in range(data_size)])
-                beta = max(np.dot(alpha * y_train, preds) for preds in predictions)
+                lp_weights = np.array(
+                    [weights[j].X for j in range(forest_size)]
+                )
+                alpha = np.array(
+                    [max(0, acc_constraints[i].Pi) for i in range(data_size)]
+                )
+                beta = max(
+                    np.dot(alpha * y_train, preds) for preds in predictions
+                )
                 obj_val = model.ObjVal
                 solve_time = model.Runtime
 

@@ -2,10 +2,12 @@ import numpy as np
 import pytest
 from colboost.ensemble import EnsembleClassifier
 
+
 def test_initial_state():
     model = EnsembleClassifier()
     assert model.learners == []
     assert model.weights == []
+
 
 def test_single_iteration_fit(sample_dataset):
     X, y = sample_dataset
@@ -14,6 +16,7 @@ def test_single_iteration_fit(sample_dataset):
     assert len(model.learners) == 1
     assert len(model.weights) == 1
 
+
 def test_prediction_shape(sample_dataset):
     X, y = sample_dataset
     model = EnsembleClassifier(max_iter=3)
@@ -21,10 +24,12 @@ def test_prediction_shape(sample_dataset):
     preds = model.predict(X)
     assert preds.shape == (len(y),)
 
+
 def test_not_fitted():
     model = EnsembleClassifier()
     with pytest.raises(RuntimeError):
         model.predict(np.zeros((5, 4)))
+
 
 def test_train_objective_logging(sample_dataset):
     X, y = sample_dataset
@@ -56,3 +61,11 @@ def test_invalid_labels():
     model = EnsembleClassifier()
     with pytest.raises(ValueError):
         model.fit(X, y)
+
+def test_score_with_fitted_model(sample_dataset):
+    X, y = sample_dataset
+    model = EnsembleClassifier(max_iter=3)
+    model.fit(X, y)
+    score = model.score(X, y)
+    assert 0.0 <= score <= 1.0
+

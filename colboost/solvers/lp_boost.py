@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 from typing import Optional, Tuple
-from gurobipy import GRB, Model, Env
+from gurobipy import GRB, Model
 from colboost.solvers.solver import Solver
 
 logger = logging.getLogger(__name__)
@@ -16,6 +16,8 @@ class LPBoost(Solver):
     Linear Programming Boosting via Column Generation.
     Machine Learning, 46, 225–254 (2002).
     """
+    def __init__(self):
+        super().__init__()
 
     def solve(
         self,
@@ -24,8 +26,7 @@ class LPBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int,
-        env: Optional[Env] = None,
+        seed: int
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],
@@ -50,8 +51,6 @@ class LPBoost(Solver):
             Number of threads to use for Gurobi.
         seed : int
             Random seed for Gurobi.
-        env : Optional[Env]
-            Custom Gurobi environment, or None to use the default.
 
         Returns
         -------
@@ -69,7 +68,7 @@ class LPBoost(Solver):
         forest_size = len(predictions)
         data_size = len(y_train)
 
-        with Model(env=env) as model:
+        with Model(env=self.env) as model:
             model.Params.OutputFlag = 0
             model.Params.TimeLimit = time_limit
             model.Params.Threads = num_threads
@@ -110,7 +109,9 @@ class LPBoost(Solver):
                 alpha = np.array(
                     [acc_constraints[i].Pi for i in range(data_size)]
                 )
-                beta = max(np.dot(alpha * y_train, preds) for preds in predictions)
+                beta = max(
+                    np.dot(alpha * y_train, preds) for preds in predictions
+                )
                 obj_val = model.ObjVal
                 solve_time = model.Runtime
 

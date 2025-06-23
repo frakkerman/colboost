@@ -3,11 +3,13 @@ from sklearn.datasets import make_classification
 from sklearn.tree import DecisionTreeClassifier
 from gurobipy import Env
 
+
 @pytest.fixture
 def sample_dataset():
     X, y = make_classification(n_samples=100, n_features=4, random_state=0)
     y = 2 * y - 1
     return X, y
+
 
 @pytest.fixture
 def dataset_and_preds():
@@ -17,10 +19,3 @@ def dataset_and_preds():
     clf.fit(X, y)
     preds = clf.predict(X)
     return preds, y
-
-@pytest.fixture
-def gurobi_env():
-    env = Env(empty=True)
-    env.setParam("OutputFlag", 0)
-    env.start()
-    return env

@@ -2,7 +2,6 @@ import logging
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, clone
 from sklearn.tree import DecisionTreeClassifier
-from gurobipy import Env
 from colboost.solvers import get_solver
 from colboost.utils.predictions import create_predictions
 
@@ -30,7 +29,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         seed=0,
         tradeoff_hyperparam=1e-2,
     ):
-        self.solver_name = solver
+        self.solver = solver
         self.base_estimator = base_estimator
         self.max_depth = max_depth
         self.max_iter = max_iter
@@ -48,14 +47,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         self.objective_values_ = []
         self.solve_times_ = []
         self.train_accuracies_ = []
-        self.env = Env(params={"LogFile": ""})
 
-    def __del__(self):
-        if hasattr(self, "env"):
-            try:
-                self.env.dispose()
-            except Exception:
-                pass
 
     def fit(self, X, y):
         """
@@ -73,14 +65,11 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         self : object
             Fitted estimator.
         """
-        self.solver = get_solver(self.solver_name)
-        X, y = np.asarray(X), np.asarray(y)
+        self.solver = get_solver(self.solver)
+        X, y = self._validate_inputs(X, y)
         self.learners = []
         self.weights = None
         beta = 0.0
-
-        if not np.all(np.isin(y, [-1, 1])):
-            raise ValueError("Only -1/+1 labels are supported.")
 
         sample_weights = np.ones(len(y)) / len(y)
         prev_obj = float("inf")
@@ -91,6 +80,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 clf = clone(self.base_estimator)
             else:
                 clf = DecisionTreeClassifier(max_depth=self.max_depth)
+            self._validate_base_learner(clf)
 
             clf.fit(X, y, sample_weight=sample_weights)
             preds = create_predictions(clf, X, self.use_crb)
@@ -107,8 +97,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 hyperparam=self.tradeoff_hyperparam,
                 time_limit=self.gurobi_time_limit,
                 num_threads=self.gurobi_num_threads,
-                seed=self.seed,
-                env=None,
+                seed=self.seed
             )
 
             self.objective_values_.append(objval)
@@ -157,14 +146,17 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         self : object
             The estimator with updated weights.
         """
-        self.solver = get_solver(self.solver_name)
+        if not learners:
+            raise ValueError("List of learners must be non-empty.")
+        self._validate_base_learner(learners[0])
+        X, y = self._validate_inputs(X, y)
 
-        X, y = np.asarray(X), np.asarray(y)
-        if not np.all(np.isin(y, [-1, 1])):
-            raise ValueError("Only -1/+1 labels are supported.")
+        self.solver = get_solver(self.solver)
 
         self.learners = learners
-        pred_matrix = [create_predictions(clf, X, self.use_crb) for clf in learners]
+        pred_matrix = [
+            create_predictions(clf, X, self.use_crb) for clf in learners
+        ]
 
         alpha, beta, optim_weights, objval, solve_time = self.solver.solve(
             predictions=pred_matrix,
@@ -172,8 +164,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             hyperparam=self.tradeoff_hyperparam,
             time_limit=self.gurobi_time_limit,
             num_threads=self.gurobi_num_threads,
-            seed=self.seed,
-            env=None,
+            seed=self.seed
         )
 
         if optim_weights is None:
@@ -219,6 +210,10 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         )
         return np.sign(np.dot(self.weights, pred_matrix))
 
+    def score(self, X, y):
+        y_pred = self.predict(X)
+        return np.mean(y_pred == y)
+
     def compute_margins(self, X, y):
         """
         Computes margin distribution y * f(x) for input data.
@@ -234,10 +229,41 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             Margin values for each sample.
         """
         if not self.learners or self.weights is None:
-            raise RuntimeError("Model must be fitted before computing margins.")
+            raise RuntimeError(
+                "Model must be fitted before computing margins."
+            )
 
         y = np.asarray(y)
-        pred_matrix = np.array([create_predictions(clf, X, self.use_crb) for clf in self.learners])
+        pred_matrix = np.array(
+            [create_predictions(clf, X, self.use_crb) for clf in self.learners]
+        )
         aggregated = np.dot(self.weights, pred_matrix)
         return y * aggregated
+
+    def _validate_base_learner(self, learner):
+        if not hasattr(learner, "fit") or not callable(learner.fit):
+            raise TypeError(f"Base learner must implement `fit()`, got: {type(learner).__name__}")
+        if not hasattr(learner, "predict") or not callable(learner.predict):
+            raise TypeError(f"Base learner must implement `predict()`, got: {type(learner).__name__}")
+        if self.use_crb and (not hasattr(learner, "predict_proba") or not callable(learner.predict_proba)):
+            logger.warning(f"Learner {type(learner).__name__} has no `predict_proba`; using `predict()` instead.")
+
+    def _validate_inputs(self, X, y):
+        X = np.asarray(X)
+        y = np.asarray(y)
+
+        if X.ndim != 2:
+            raise ValueError(f"X should be 2D (got shape {X.shape})")
+        if y.ndim != 1:
+            raise ValueError(f"y should be 1D (got shape {y.shape})")
+        if len(X) != len(y):
+            raise ValueError(f"X and y must have the same number of samples (got {len(X)} and {len(y)})")
+        if not np.issubdtype(X.dtype, np.number):
+            raise TypeError(f"X must be numeric (got dtype {X.dtype})")
+        if np.isnan(X).any() or np.isnan(y).any():
+            raise ValueError("X and y must not contain NaN values")
+        if not np.all(np.isin(y, [-1, 1])):
+            raise ValueError("Only -1/+1 labels are supported.")
+
+        return X, y
 

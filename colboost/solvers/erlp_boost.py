@@ -2,7 +2,7 @@ import numpy as np
 import math
 import logging
 from typing import Optional, Tuple
-from gurobipy import GRB, Model, Env
+from gurobipy import GRB, Model
 from colboost.solvers.solver import Solver
 
 logger = logging.getLogger(__name__)
@@ -17,6 +17,8 @@ class ERLPBoost(Solver):
     Entropy Regularized LPBoost. Lecture Notes in Computer Science, vol 5254.
     https://doi.org/10.1007/978-3-540-87987-9_23
     """
+    def __init__(self):
+        super().__init__()
 
     def solve(
         self,
@@ -25,8 +27,7 @@ class ERLPBoost(Solver):
         hyperparam: float,
         time_limit: int,
         num_threads: int,
-        seed: int,
-        env: Optional[Env] = None,
+        seed: int
     ) -> Tuple[
         Optional[np.ndarray],
         Optional[float],
@@ -35,7 +36,6 @@ class ERLPBoost(Solver):
         Optional[float],
     ]:
         data_size = len(y_train)
-        forest_size = len(predictions)
 
         dist = np.full(data_size, 1 / data_size)
         ln_n = math.log(data_size)
@@ -48,14 +48,16 @@ class ERLPBoost(Solver):
         objval = None
         margin_constraints = []
 
-        with Model(env=env) as model:
+        with Model(env=self.env) as model:
             model.Params.OutputFlag = 0
             model.Params.Threads = num_threads
             model.Params.Seed = seed
             model.Params.NumericFocus = 3
             model.Params.TimeLimit = time_limit
 
-            gamma = model.addVar(lb=-GRB.INFINITY, vtype=GRB.CONTINUOUS, name="gamma")
+            gamma = model.addVar(
+                lb=-GRB.INFINITY, vtype=GRB.CONTINUOUS, name="gamma"
+            )
             dist_vars = model.addVars(
                 data_size,
                 lb=0.0,
@@ -72,10 +74,13 @@ class ERLPBoost(Solver):
             for iteration in range(max_iter):
                 for j, preds in enumerate(predictions):
                     margin_expr = sum(
-                        dist_vars[i] * y_train[i] * preds[i] for i in range(data_size)
+                        dist_vars[i] * y_train[i] * preds[i]
+                        for i in range(data_size)
                     )
                     margin_constraints.append(
-                        model.addConstr(margin_expr <= gamma, name=f"margin_{j}")
+                        model.addConstr(
+                            margin_expr <= gamma, name=f"margin_{j}"
+                        )
                     )
 
                 EPSILON = 1e-9
@@ -92,7 +97,9 @@ class ERLPBoost(Solver):
                 model.optimize()
 
                 if model.status != GRB.OPTIMAL:
-                    logger.warning("Gurobi failed to find an optimal solution.")
+                    logger.warning(
+                        "Gurobi failed to find an optimal solution."
+                    )
                     return None, None, None, None, None
 
                 dist_new = np.array([dist_vars[i].X for i in range(data_size)])
@@ -100,7 +107,10 @@ class ERLPBoost(Solver):
                 objval = model.ObjVal
 
                 edges = [
-                    sum(dist_new[i] * y_train[i] * preds[i] for i in range(data_size))
+                    sum(
+                        dist_new[i] * y_train[i] * preds[i]
+                        for i in range(data_size)
+                    )
                     for preds in predictions
                 ]
                 gamma_star = max(edges) + float(entropy.getValue()) / eta

@@ -12,6 +12,7 @@ def test_adaboost_fit_weights():
     assert len(model.learners) == 5
     assert all(w >= 0 for w in model.weights)
 
+
 def test_random_forest_fit_weights():
     X, y = make_classification(n_samples=50, n_features=5, random_state=1)
     y = 2 * y - 1
