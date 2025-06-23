@@ -16,10 +16,10 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(
         self,
-        solver="lp_boost",
+        solver="nm_boost",
         base_estimator=None,
         max_depth=1,
-        max_iter=50,
+        max_iter=100,
         use_crb=False,
         check_dual_const=False,
         obj_eps=1e-4,
@@ -128,9 +128,9 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         self.classes_ = np.unique(y)
         return self
 
-    def fit_weights_only(self, X, y, learners):
+    def reweight_ensemble(self, X, y, learners):
         """
-        Fit only the weights for a fixed ensemble of pre-trained learners.
+        Determine weights for an existing ensemble of pre-trained learners.
 
         Parameters
         ----------
