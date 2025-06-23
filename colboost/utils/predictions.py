@@ -1,4 +1,3 @@
-import numpy as np
 
 
 def create_predictions(learner, X, use_crb=False):
