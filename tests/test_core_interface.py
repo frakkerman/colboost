@@ -45,7 +45,8 @@ def test_margin_sign_prediction_agreement(sample_dataset):
     model.fit(X, y)
     margins = model.compute_margins(X, y)
     preds = model.predict(X)
-    assert np.all(np.sign(margins) == preds)
+    expected_preds = y * np.where(margins >= 0, 1, -1)
+    assert np.all(expected_preds == preds)
 
 
 def test_early_stopping(sample_dataset):

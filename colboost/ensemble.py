@@ -208,7 +208,8 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         pred_matrix = np.array(
             [create_predictions(clf, X, self.use_crb) for clf in self.learners]
         )
-        return np.sign(np.dot(self.weights, pred_matrix))
+        aggregated = np.dot(self.weights, pred_matrix)
+        return np.where(aggregated >= 0, 1, -1)
 
     def score(self, X, y):
         y_pred = self.predict(X)
