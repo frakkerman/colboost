@@ -51,7 +51,9 @@ def test_margin_sign_prediction_agreement(sample_dataset):
 
 def test_early_stopping(sample_dataset):
     X, y = sample_dataset
-    model = EnsembleClassifier(max_iter=10, obj_check=2, obj_eps=1e-5)
+    model = EnsembleClassifier(
+        max_iter=10, obj_check=2, obj_eps=1e-5, early_stopping=True
+    )
     model.fit(X, y)
     assert len(model.learners) < model.max_iter
 

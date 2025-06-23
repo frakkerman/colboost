@@ -22,6 +22,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         max_iter=100,
         use_crb=False,
         check_dual_const=False,
+        early_stopping=False,
         obj_eps=1e-6,
         obj_check=10,
         gurobi_time_limit=60,
@@ -37,6 +38,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         self.check_dual_const = check_dual_const
         self.obj_eps = obj_eps
         self.obj_check = obj_check
+        self.early_stopping = early_stopping
         self.gurobi_time_limit = gurobi_time_limit
         self.gurobi_num_threads = gurobi_num_threads
         self.seed = seed
@@ -115,7 +117,11 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             self.weights = optim_weights
 
             z_diff = prev_obj - objval
-            if (it + 1) % self.obj_check == 0 and z_diff <= self.obj_eps:
+            if (
+                (it + 1) % self.obj_check == 0
+                and z_diff <= self.obj_eps
+                and self.early_stopping
+            ):
                 logger.info(
                     f"Stopping at iteration {it + 1}: z_diff={z_diff:.4f}"
                 )
