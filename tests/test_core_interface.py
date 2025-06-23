@@ -69,3 +69,22 @@ def test_score_with_fitted_model(sample_dataset):
     score = model.score(X, y)
     assert 0.0 <= score <= 1.0
 
+def test_model_attributes_after_training(sample_dataset):
+    X, y = sample_dataset
+    model = EnsembleClassifier(max_iter=3, solver="lp_boost")
+    model.fit(X, y)
+
+    # Check basic attribute existence and types
+    assert isinstance(model.learners, list)
+    assert isinstance(model.weights, np.ndarray)
+    assert isinstance(model.objective_values_, list)
+    assert isinstance(model.solve_times_, list)
+    assert isinstance(model.train_accuracies_, list)
+    assert isinstance(model.n_iter_, int)
+
+    # Check expected lengths
+    assert len(model.learners) == model.n_iter_
+    assert len(model.weights) == model.n_iter_
+    assert len(model.objective_values_) == model.n_iter_
+    assert len(model.solve_times_) == model.n_iter_
+    assert len(model.train_accuracies_) == model.n_iter_

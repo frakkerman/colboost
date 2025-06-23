@@ -34,12 +34,12 @@ X, y = make_classification(n_samples=200, n_features=20, random_state=0)
 y = 2 * y - 1  # Convert labels from {0, 1} to {-1, +1}
 
 # Train an LPBoost-based ensemble
-clf = EnsembleClassifier(solver="nm_boost", max_iter=50)
-clf.fit(X, y)
-print("Training accuracy:", clf.score(X, y))
+model = EnsembleClassifier(solver="nm_boost", max_iter=50)
+model.fit(X, y)
+print("Training accuracy:", model.score(X, y))
 
 # Obtain margin values y * f(x)
-margins = clf.compute_margins(X, y)
+margins = model.compute_margins(X, y)
 print("First 5 margins:", margins[:5])
 
 ```
@@ -64,4 +64,20 @@ model = EnsembleClassifier(solver="nm_boost")
 model.reweight_ensemble(X, y, learners=ada.estimators_)
 
 print("Training accuracy after reweighting:", model.score(X, y))
+```
+
+## Inspecting model attributes after training
+
+```python
+# assuming 'model' is the fitted colboost model
+print("Learners:", model.learners) 
+print("Weights:", model.weights) 
+print("Objective values:", model.objective_values_)
+print("Solve times:", model.solve_times_)    
+print("Training accuracy per iter:", model.train_accuracies_)
+print("Number of iterations:", model.n_iter_)
+
+# compute margin distribution
+margins = model.compute_margins(X, y)
+print("First 5 margins (y * f(x)):", margins[:5])
 ```
