@@ -30,6 +30,29 @@ class ERLPBoost(Solver):
         num_threads: int,
         seed: int,
     ) -> SolveResult:
+        """
+        Solves the ERLPBoost optimization problem to determine optimal ensemble weights.
+
+        Parameters
+        ----------
+        predictions : List[np.ndarray]
+            Predictions of each base learner on the training set.
+        y_train : np.ndarray
+            True labels (-1 or +1) for training set.
+        hyperparam : float
+            trade-off parameter..
+        time_limit : int
+            Maximum solver runtime in seconds.
+        num_threads : int
+            Number of threads to use.
+        seed : int
+            Random seed for Gurobi.
+
+        Returns
+        -------
+        SolveResult
+            Structured result containing alpha, beta, weights, objective value, and solve time.
+        """
         data_size = len(y_train)
         dist = np.full(data_size, 1 / data_size)
 

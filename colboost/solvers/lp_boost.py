@@ -38,8 +38,8 @@ class LPBoost(Solver):
             Predictions of each base learner on the training set.
         y_train : np.ndarray
             True labels (-1 or +1) for training set.
-        regularization_strength : float
-            Penalty applied to slack variables (soft margin).
+        hyperparam : float
+            trade-off parameter..
         time_limit : int
             Maximum solver runtime in seconds.
         num_threads : int
