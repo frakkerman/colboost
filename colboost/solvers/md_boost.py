@@ -21,6 +21,10 @@ class MDBoost(Solver):
     def __init__(self):
         super().__init__()
         self.use_identity_approx = True
+        if getattr(self, "use_identity_approx", True):
+            logger.info("Using identity matrix approximation for variance.")
+        else:
+            logger.info("Using full covariance matrix for variance.")
 
     def solve(
         self,
@@ -111,11 +115,8 @@ class MDBoost(Solver):
 
     def _set_objective(self, model, rho, data_size: int):
         if getattr(self, "use_identity_approx", True):
-            logger.info("Using identity matrix approximation for variance.")
             quad_term = 0.5 * sum(rho[i] * rho[i] for i in rho)
         else:
-            logger.info("Using full covariance matrix for variance.")
-
             # A[i][j] = -1/(n-1) for i ≠ j, A[i][i] = 1
             n = data_size
             quad_term = 0.0
