@@ -27,7 +27,7 @@ To verify the installation, in the root execute:
 pytest
 ```
 
-Note: install requires recent versions of the setuptools library. If neeeded, update it using:
+Note: install requires recent versions of pip and of the setuptools library. If neeeded, update both using:
 
 ```bash
 pip install --upgrade pip setuptools
