@@ -1,4 +1,4 @@
-name: Run Pytest on Push/PR
+name: Passing Tests
 
 on:
   push:
