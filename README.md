@@ -92,10 +92,9 @@ When using the code or data in this repo, please cite the following work:
 
 ```
 @misc{akkerman2025_lpboosting,
-      title={Learning Dynamic Selection and Pricing of Out-of-Home Deliveries}, 
+      title={Boosting Revisited: Benchmarking and Advancing LP-Based Ensemble Methods}, 
       author={Fabian Akkerman and Julien Ferry and Christian Artigues and Emmanuel Hébrard and Thibaut Vidal},
       year={2025},
-      eprint={2311.13983},
       archivePrefix={arXiv},
       primaryClass={cs.LG}
 }
