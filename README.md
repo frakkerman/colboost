@@ -1,6 +1,6 @@
 # colboost: LP-Based Boosting with Column Generation
 
-[![Tests](https://github.com/frakkerman/colboost/actions/workflows/test.yaml/badge.svg)](https://github.com/frakkerman/colboost/actions/workflows/test.yaml)
+[![Tests](https://github.com/frakkerman/colboost/actions/workflows/test.yml/badge.svg)](https://github.com/frakkerman/colboost/actions/workflows/test.yml)
 [![License](https://img.shields.io/github/license/frakkerman/colboost)](https://github.com/frakkerman/colboost/blob/main/LICENSE)
 ![Python Version](https://img.shields.io/badge/python-%3E=3.11-blue)
 
