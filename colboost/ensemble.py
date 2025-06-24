@@ -111,11 +111,12 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             acc = np.mean(train_preds == y)
             self.train_accuracies_.append(acc)
 
-            if result.alpha is None or beta is None:
+            if result.alpha is None or result.beta is None:
                 logger.warning("Solver failed. Stopping.")
                 break
 
             sample_weights = result.alpha
+            beta = result.beta
             self.learners.append(clf)
             self.weights = result.weights
 
