@@ -1,5 +1,15 @@
 # colboost: LP-Based Boosting with Column Generation
 
+[![Tests](https://github.com/frakkerman/colboost/actions/workflows/test.yaml/badge.svg)](https://github.com/frakkerman/colboost/actions/workflows/test.yaml)
+[![License](https://img.shields.io/github/license/frakkerman/colboost)](https://github.com/frakkerman/colboost/blob/main/LICENSE)
+![Python Version](https://img.shields.io/badge/python-%3E=3.11-blue)
+
+<!-- Uncomment after publishing to PyPI:
+[![PyPI](https://img.shields.io/pypi/v/colboost)](https://pypi.org/project/colboost/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/colboost.svg)](https://pypi.org/project/colboost/)
+-->
+
+
 **colboost** is a Python library for training ensemble classifiers using linear programming (LP) based boosting methods such as LPBoost. Each iteration fits a weak learner and solves a mathematical program to determine optimal ensemble weights. The implementation is compatible with scikit-learn and supports any scikit-learn-compatible base learner. Currently, the library only supports binary classification.
 
 ## Installation
@@ -103,5 +113,6 @@ When using the code or data in this repo, please cite the following work:
 **Note:** This library is a reimplementation of the original code from the paper. While we have carefully validated the implementation, there may be minor discrepancies in results compared to those reported in the paper.
 
 ## License
-* [MIT license](https://opensource.org/license/mit/)
-* Copyright 2025 © Fabian Akkerman, Julien Ferry, Christian Artigues, Emmanuel Hébrard, Thibaut Vidal
+
+- **[MIT license](http://opensource.org/licenses/mit-license.php)**
+- Copyright 2025 © Fabian Akkerman, Julien Ferry, Christian Artigues, Emmanuel Hébrard, Thibaut Vidal

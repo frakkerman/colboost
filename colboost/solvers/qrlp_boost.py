@@ -87,7 +87,7 @@ class QRLPBoost(Solver):
 
                 if model.status != GRB.OPTIMAL:
                     logger.warning(
-                        "Gurobi failed to find an optimal solution."
+                        f"Gurobi failed to find an optimal solution (status: {model.status})"
                     )
                     return SolveResult(None, None, None, None, None)
 
