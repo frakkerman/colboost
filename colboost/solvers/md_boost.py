@@ -15,7 +15,6 @@ class MDBoost(Solver):
     Shen, Chunhua and Hanxi Li.
     Boosting Through Optimization of Margin Distributions.
     IEEE Transactions on Neural Networks 21(4), 659–666 (2009).
-    https://doi.org/10.1109/TNN.2010.2040484
     """
 
     def __init__(self):

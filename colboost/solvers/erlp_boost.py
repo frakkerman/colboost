@@ -15,7 +15,6 @@ class ERLPBoost(Solver):
     Reference:
     Warmuth, M.K., Glocer, K.A., Vishwanathan, S.V.N. (2008).
     Entropy Regularized LPBoost. Lecture Notes in Computer Science, vol 5254.
-    https://doi.org/10.1007/978-3-540-87987-9_23
     """
 
     def __init__(self):

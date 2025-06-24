@@ -7,6 +7,33 @@
 
 **colboost** is a Python library for training ensemble classifiers using linear programming (LP) based boosting methods such as LPBoost. Each iteration fits a weak learner and solves a mathematical program to determine optimal ensemble weights. The implementation is compatible with scikit-learn and supports any scikit-learn-compatible base learner. Currently, the library only supports binary classification.
 
+## Implemented Solvers
+
+- **NMBoost**  
+  Negative Margin Boosting, emphasizing both accuracy and penalization of negative margins.  
+  Introduced in *our paper* (2025)
+
+- **QRLPBoost**  
+  Quadratic Regularized LPBoost using second-order updates in the dual.  
+  Introduced in *our paper* (2025)
+
+- **LPBoost**  
+  Linear Programming Boosting with slack variables (soft-margin).  
+  [Demiriz, Bennett, Shawe-Taylor (2002)](http://dx.doi.org/10.1023/A:1012470815092)
+
+- **MDBoost**  
+  Margin Distribution Boosting, optimizing both margin mean and variance.  
+  [Shen & Li (2009)](https://doi.org/10.1109/TNN.2010.2040484)
+
+- **CGBoost**  
+  Column Generation Boosting with L2-regularized margin formulation.  
+  [Bi, Zhang, Bennett (2004)](https://doi.org/10.1145/1014052.1014113)
+
+- **ERLPBoost**  
+  Entropy-Regularized LPBoost using KL-divergence between successive distributions.  
+  [Warmuth, Glocer, Vishwanathan (2008)](https://doi.org/10.1007/978-3-540-87987-9_23)
+
+
 ## Installation
 
 This project requires the Gurobi solver. Free academic licenses are available:

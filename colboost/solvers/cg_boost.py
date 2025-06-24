@@ -12,7 +12,6 @@ class CGBoost(Solver):
     Bi, Jinbo, Zhang, Tong, & Bennett, Kristin P. (2004).
     Column-generation boosting methods for mixture of kernels.
     SIGKDD International Conference on Knowledge Discovery and Data Mining.
-    https://doi.org/10.1145/1014052.1014113
     """
 
     def __init__(self):
