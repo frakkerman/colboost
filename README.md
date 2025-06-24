@@ -4,11 +4,6 @@
 [![License](https://img.shields.io/github/license/frakkerman/colboost)](https://github.com/frakkerman/colboost/blob/main/LICENSE)
 ![Python Version](https://img.shields.io/badge/python-%3E=3.11-blue)
 
-<!-- Uncomment after publishing to PyPI:
-[![PyPI](https://img.shields.io/pypi/v/colboost)](https://pypi.org/project/colboost/)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/colboost.svg)](https://pypi.org/project/colboost/)
--->
-
 
 **colboost** is a Python library for training ensemble classifiers using linear programming (LP) based boosting methods such as LPBoost. Each iteration fits a weak learner and solves a mathematical program to determine optimal ensemble weights. The implementation is compatible with scikit-learn and supports any scikit-learn-compatible base learner. Currently, the library only supports binary classification.
 
