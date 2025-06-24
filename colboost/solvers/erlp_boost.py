@@ -67,6 +67,7 @@ class ERLPBoost(Solver):
 
         with Model(env=self.env) as model:
             self.set_gurobi_params(model, time_limit, num_threads, seed)
+            model.Params.NumericFocus = 3
 
             gamma, dist_vars = self._add_variables(
                 model, data_size, hyperparam

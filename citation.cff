@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the following work:"
+title: "Boosting Revisited: Benchmarking and Advancing LP-Based Ensemble Methods"
+authors:
+  - family-names: Akkerman
+    given-names: Fabian
+  - family-names: Ferry
+    given-names: Julien
+  - family-names: Artigues
+    given-names: Christian
+  - family-names: Hébrard
+    given-names: Emmanuel
+  - family-names: Vidal
+    given-names: Thibaut
+version: "0.1.0"
+date-released: 2025-06-24
+repository-code: https://github.com/frakkerman/colboost
