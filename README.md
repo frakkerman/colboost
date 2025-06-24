@@ -43,7 +43,7 @@ from colboost.ensemble import EnsembleClassifier
 X, y = make_classification(n_samples=200, n_features=20, random_state=0)
 y = 2 * y - 1  # Convert labels from {0, 1} to {-1, +1}
 
-# Train an LPBoost-based ensemble
+# Train an NMBoost-based ensemble
 model = EnsembleClassifier(solver="nm_boost", max_iter=50)
 model.fit(X, y)
 print("Training accuracy:", model.score(X, y))
@@ -60,20 +60,22 @@ print("First 5 margins:", margins[:5])
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.datasets import make_classification
 from colboost.ensemble import EnsembleClassifier
+import numpy as np
 
 # Generate data
 X, y = make_classification(n_samples=200, n_features=20, random_state=42)
 y = 2 * y - 1  # Convert labels to {-1, +1}
 
 # Train AdaBoost with sklearn
-ada = AdaBoostClassifier(n_estimators=10, random_state=0)
+ada = AdaBoostClassifier(n_estimators=100, random_state=0)
 ada.fit(X, y)
 
-# Reweight AdaBoost base estimators using colboost
+# Reweight AdaBoost base estimators using NMBoost
 model = EnsembleClassifier(solver="nm_boost")
 model.reweight_ensemble(X, y, learners=ada.estimators_)
 
 print("Training accuracy after reweighting:", model.score(X, y))
+print("Number of non-zero weights after reweighting:", np.count_nonzero(model.weights))
 ```
 
 ## Inspecting model attributes after training
