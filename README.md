@@ -100,7 +100,7 @@ print("First 5 margins (y * f(x)):", margins[:5])
   Introduced in *our paper* (2025)
 
 - **QRLPBoost**  
-  Quadratically Regularized LPBoost, ERLPBoost variant with second-order approximation of KL-divergence regularization.
+  Quadratically Regularized LPBoost with second-order KL-divergence approximation.
   Introduced in *our paper* (2025)
 
 - **LPBoost**  
