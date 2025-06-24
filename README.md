@@ -27,6 +27,12 @@ To verify the installation, in the root execute:
 pytest
 ```
 
+Note: install requires recent versions of the setuptools library. If neeeded, update it using:
+
+```bash
+pip install --upgrade pip setuptools
+```
+
 ## Example 1: fitting an ensemble
 
 ```python
