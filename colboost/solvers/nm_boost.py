@@ -1,10 +1,7 @@
 import numpy as np
-import logging
 from typing import List
 from gurobipy import GRB, Model
 from colboost.solvers.solver import Solver, SolveResult
-
-logger = logging.getLogger(__name__)
 
 
 class NMBoost(Solver):

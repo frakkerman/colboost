@@ -24,7 +24,7 @@ class Solver(ABC):
 
     def __init__(self):
         self.env = Env(params={"LogFile": ""})
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger("colboost.solver")
 
     def __del__(self):
         if hasattr(self, "env"):

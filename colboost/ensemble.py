@@ -7,8 +7,7 @@ from colboost.solvers import get_solver
 from colboost.utils.predictions import create_predictions
 
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("colboost.ensemble")
 
 class EnsembleClassifier(BaseEstimator, ClassifierMixin):
     """
@@ -24,8 +23,8 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         use_crb=False,
         check_dual_const=False,
         early_stopping=False,
-        obj_eps=1e-6,
-        obj_check=10,
+        obj_eps=1e-4,
+        obj_check=5,
         gurobi_time_limit=60,
         gurobi_num_threads=1,
         seed=0,
@@ -120,18 +119,16 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             self.learners.append(clf)
             self.weights = result.weights
 
-            z_diff = prev_obj - result.obj_val
-            if (
-                (it + 1) % self.obj_check == 0
-                and z_diff <= self.obj_eps
-                and self.early_stopping
-            ):
-                logger.info(
-                    f"Stopping at iteration {it + 1}: z_diff={z_diff:.4f}"
-                )
-                break
+            if self.early_stopping and len(self.train_accuracies_) >= 2 * self.obj_check:
+                recent_avg = np.mean(self.train_accuracies_[-self.obj_check:])
+                prev_avg = np.mean(self.train_accuracies_[-2 * self.obj_check:-self.obj_check])
+                delta_acc = recent_avg - prev_avg
 
-            prev_obj = result.obj_val
+                if delta_acc < self.obj_eps:
+                    logger.info(
+                        f"Early stopping at iteration {it + 1}: Δacc={delta_acc:.6f} < obj_eps={self.obj_eps}"
+                    )
+                    break
 
             progress.set_postfix({
                 "train acc": f"{acc:.3f}",

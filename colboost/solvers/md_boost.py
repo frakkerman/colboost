@@ -4,8 +4,7 @@ from typing import List
 from gurobipy import GRB, Model
 from colboost.solvers.solver import Solver, SolveResult
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("colboost.solver")
 
 class MDBoost(Solver):
     """
@@ -114,12 +113,17 @@ class MDBoost(Solver):
             logger.info("Using identity matrix approximation for variance.")
             quad_term = 0.5 * sum(rho[i] * rho[i] for i in rho)
         else:
-            logger.warning(
-                "Non-identity approximation is not supported in Gurobi expressions."
-            )
-            raise NotImplementedError(
-                "Non-identity matrix approximation is not implemented."
-            )
+            logger.info("Using full covariance matrix for variance.")
 
-        linear_term = sum(rho[i] for i in rho)
+            # A[i][j] = -1/(n-1) for i ≠ j, A[i][i] = 1
+            n = data_size
+            quad_term = 0.0
+            for i in range(n):
+                for j in range(n):
+                    coef = 1.0 if i == j else -1.0 / (n - 1)
+                    quad_term += coef * rho[i] * rho[j]
+            quad_term *= 0.5  # (1/2) * rho^T A rho
+
+        linear_term = sum(rho[i] for i in rho)  # 1^T rho
         model.setObjective(linear_term - quad_term, GRB.MAXIMIZE)
+
