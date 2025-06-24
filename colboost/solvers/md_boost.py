@@ -1,8 +1,8 @@
 import numpy as np
 import logging
-from typing import Optional, Tuple
+from typing import List
 from gurobipy import GRB, Model
-from colboost.solvers.solver import Solver
+from colboost.solvers.solver import Solver, SolveResult
 
 logger = logging.getLogger(__name__)
 
@@ -24,85 +24,79 @@ class MDBoost(Solver):
 
     def solve(
         self,
-        predictions: list[np.ndarray],
+        predictions: List[np.ndarray],
         y_train: np.ndarray,
         hyperparam: float,
         time_limit: int,
         num_threads: int,
         seed: int,
-    ) -> Tuple[
-        Optional[np.ndarray],
-        Optional[float],
-        Optional[np.ndarray],
-        Optional[float],
-        Optional[float],
-    ]:
+    ) -> SolveResult:
         forest_size = len(predictions)
         data_size = len(y_train)
 
         with Model(env=self.env) as model:
-            model.Params.OutputFlag = 0
-            model.Params.TimeLimit = time_limit
-            model.Params.Threads = num_threads
-            model.Params.Seed = seed
+            self.set_gurobi_params(model, time_limit, num_threads, seed)
 
-            weights = model.addVars(
-                forest_size, lb=0.0, vtype=GRB.CONTINUOUS, name="w"
+            weights, rho = self._add_variables(model, forest_size, data_size)
+            margin_constraints = self._add_constraints(
+                model, predictions, y_train, weights, rho
             )
-            rho = model.addVars(
-                data_size, lb=-GRB.INFINITY, vtype=GRB.CONTINUOUS, name="rho"
+            sum_constraint = self._add_weight_sum_constraint(
+                model, weights, hyperparam
             )
-
-            margin_constraints = [
-                model.addConstr(
-                    rho[i]
-                    == sum(
-                        y_train[i] * predictions[j][i] * weights[j]
-                        for j in range(forest_size)
-                    ),
-                    name=f"margin_{i}",
-                )
-                for i in range(data_size)
-            ]
-
-            wsum_constraint = model.addConstr(
-                sum(weights[j] for j in range(forest_size)) == hyperparam,
-                name="sum_weights",
-            )
-
-            if getattr(self, "use_identity_approx", True):
-                logger.info(
-                    "Using identity matrix approximation for variance."
-                )
-                quadratic_term = 0.5 * sum(
-                    rho[i] * rho[i] for i in range(data_size)
-                )
-            else:
-                A = np.ones((data_size, data_size)) * (-1 / (data_size - 1))
-                np.fill_diagonal(A, 1)
-                rho_vec = np.array([rho[i] for i in range(data_size)])
-                quadratic_term = 0.5 * np.dot(rho_vec.T, np.dot(A, rho_vec))
-
-            linear_term = sum(rho[i] for i in range(data_size))
-            model.setObjective(linear_term - quadratic_term, GRB.MAXIMIZE)
+            self._set_objective(model, rho, data_size)
 
             model.optimize()
+            return self._extract_solution(
+                model,
+                weights,
+                margin_constraints,
+                constraint_type="clipped",
+                sum_constraint=sum_constraint
+            )
 
-            if model.status == GRB.OPTIMAL:
-                lp_weights = np.array(
-                    [weights[j].X for j in range(forest_size)]
-                )
-                alpha = np.array(
-                    [
-                        max(0, margin_constraints[i].Pi)
-                        for i in range(data_size)
-                    ]
-                )
-                beta = wsum_constraint.Pi
-                obj_val = model.ObjVal
-                solve_time = model.Runtime
+    def _add_variables(self, model, forest_size: int, data_size: int):
+        weights = model.addVars(
+            forest_size, lb=0.0, vtype=GRB.CONTINUOUS, name="w"
+        )
+        rho = model.addVars(
+            data_size, lb=-GRB.INFINITY, vtype=GRB.CONTINUOUS, name="rho"
+        )
+        return weights, rho
 
-                return alpha, beta, lp_weights, obj_val, solve_time
+    def _add_constraints(self, model, predictions, y_train, weights, rho):
+        forest_size = len(predictions)
+        data_size = len(y_train)
 
-            logger.warning("Gurobi failed to find an optimal solution.")
-            return None, None, None, None, None
+        return [
+            model.addConstr(
+                rho[i]
+                == sum(
+                    y_train[i] * predictions[j][i] * weights[j]
+                    for j in range(forest_size)
+                ),
+                name=f"margin_{i}",
+            )
+            for i in range(data_size)
+        ]
+
+    def _add_weight_sum_constraint(self, model, weights, total_weight):
+        return model.addConstr(
+            sum(weights[j] for j in weights) == total_weight,
+            name="sum_weights",
+        )
+
+    def _set_objective(self, model, rho, data_size: int):
+        if getattr(self, "use_identity_approx", True):
+            logger.info("Using identity matrix approximation for variance.")
+            quad_term = 0.5 * sum(rho[i] * rho[i] for i in rho)
+        else:
+            logger.warning(
+                "Non-identity approximation is not supported in Gurobi expressions."
+            )
+            raise NotImplementedError(
+                "Non-identity matrix approximation is not implemented."
+            )
+
+        linear_term = sum(rho[i] for i in rho)
+        model.setObjective(linear_term - quad_term, GRB.MAXIMIZE)

@@ -1,8 +1,8 @@
 import numpy as np
 import logging
-from typing import Optional, Tuple
+from typing import List
 from gurobipy import GRB, Model
-from colboost.solvers.solver import Solver
+from colboost.solvers.solver import Solver, SolveResult
 
 logger = logging.getLogger(__name__)
 
@@ -23,78 +23,70 @@ class CGBoost(Solver):
 
     def solve(
         self,
-        predictions: list[np.ndarray],
+        predictions: List[np.ndarray],
         y_train: np.ndarray,
         hyperparam: float,
         time_limit: int,
         num_threads: int,
         seed: int,
-    ) -> Tuple[
-        Optional[np.ndarray],
-        Optional[float],
-        Optional[np.ndarray],
-        Optional[float],
-        Optional[float],
-    ]:
+    ) -> SolveResult:
         forest_size = len(predictions)
         data_size = len(y_train)
 
         with Model(env=self.env) as model:
-            model.Params.OutputFlag = 0
-            model.Params.TimeLimit = time_limit
-            model.Params.Threads = num_threads
-            model.Params.Seed = seed
+            self.set_gurobi_params(model, time_limit, num_threads, seed)
 
-            weights = model.addVars(
-                forest_size,
-                lb=0.0,
-                ub=GRB.INFINITY,
-                vtype=GRB.CONTINUOUS,
-                name="w",
+            weights, slack_vars = self._add_variables(
+                model, forest_size, data_size
             )
-
-            xi = model.addVars(
-                data_size,
-                lb=0.0,
-                vtype=GRB.CONTINUOUS,
-                name="xi",
+            acc_constraints = self._add_constraints(
+                model, predictions, y_train, weights, slack_vars
             )
-
-            acc_constraints = [
-                model.addConstr(
-                    sum(
-                        y_train[i] * predictions[j][i] * weights[j]
-                        for j in range(forest_size)
-                    )
-                    + xi[i]
-                    >= 1,
-                    name=f"acc_{i}",
-                )
-                for i in range(data_size)
-            ]
-
-            model.setObjective(
-                0.5 * sum(weights[j] * weights[j] for j in range(forest_size))
-                + hyperparam * sum(xi[i] for i in range(data_size)),
-                GRB.MINIMIZE,
-            )
+            self._set_objective(model, weights, slack_vars, hyperparam)
 
             model.optimize()
+            return self._extract_solution(
+                model,
+                weights,
+                acc_constraints,
+                predictions=predictions,
+                y_train=y_train,
+                constraint_type="clipped"
+            )
 
-            if model.status == GRB.OPTIMAL:
-                lp_weights = np.array(
-                    [weights[j].X for j in range(forest_size)]
-                )
-                alpha = np.array(
-                    [max(0, acc_constraints[i].Pi) for i in range(data_size)]
-                )
-                beta = max(
-                    np.dot(alpha * y_train, preds) for preds in predictions
-                )
-                obj_val = model.ObjVal
-                solve_time = model.Runtime
+    def _add_variables(self, model, forest_size: int, data_size: int):
+        weights = model.addVars(
+            forest_size,
+            lb=0.0,
+            ub=GRB.INFINITY,
+            vtype=GRB.CONTINUOUS,
+            name="w",
+        )
+        slack = model.addVars(
+            data_size, lb=0.0, vtype=GRB.CONTINUOUS, name="xi"
+        )
+        return weights, slack
 
-                return alpha, beta, lp_weights, obj_val, solve_time
+    def _add_constraints(self, model, predictions, y_train, weights, slack):
+        forest_size = len(predictions)
+        data_size = len(y_train)
 
-            logger.warning("Gurobi failed to find an optimal solution.")
-            return None, None, None, None, None
+        return [
+            model.addConstr(
+                sum(
+                    y_train[i] * predictions[j][i] * weights[j]
+                    for j in range(forest_size)
+                )
+                + slack[i]
+                >= 1,
+                name=f"acc_{i}",
+            )
+            for i in range(data_size)
+        ]
+
+    def _set_objective(self, model, weights, slack, C: float):
+        model.setObjective(
+            0.5 * sum(weights[j] * weights[j] for j in weights)
+            + C * sum(slack[i] for i in slack),
+            GRB.MINIMIZE,
+        )

@@ -1,5 +1,6 @@
 import numpy as np
 from colboost.ensemble import EnsembleClassifier
+from colboost.solvers.solver import SolveResult
 from unittest.mock import patch
 
 
@@ -12,13 +13,28 @@ def test_custom_gurobi_env(dataset_and_preds):
 
 def test_solver_params_passed():
     X, y = np.random.randn(20, 4), np.ones(20)
-    with patch("colboost.solvers.nm_boost.NMBoost.solve") as mock:
-        mock.return_value = (np.ones(20) / 20, 0, np.array([1.0]), 1.0, 0.1)
+
+    with patch("colboost.solvers.nm_boost.NMBoost.solve") as mock_solve:
+        mock_solve.return_value = SolveResult(
+            alpha=np.ones(20) / 20,
+            beta=0,
+            weights=np.array([1.0]),
+            obj_val=1.0,
+            solve_time=0.1,
+        )
         model = EnsembleClassifier(
-            max_iter=1, gurobi_time_limit=10, gurobi_num_threads=3
+            solver="nm_boost",
+            max_iter=1,
+            gurobi_time_limit=10,
+            gurobi_num_threads=3,
         )
         model.fit(X, y)
-        kwargs = mock.call_args[1]
+        # Check that the solve method was called
+        assert mock_solve.called, (
+            "NMBoost.solve was not called by EnsembleClassifier"
+        )
+        # Retrieve keyword arguments safely
+        kwargs = mock_solve.call_args.kwargs
         assert kwargs["time_limit"] == 10
         assert kwargs["num_threads"] == 3
 
@@ -26,7 +42,7 @@ def test_solver_params_passed():
 def test_dual_constraint_early_stop():
     X, y = np.random.randn(20, 4), np.ones(20)
 
-    with patch("colboost.solvers.nm_boost.NMBoost.solve") as mock:
+    with patch("colboost.solvers.lp_boost.LPBoost.solve") as mock:
         mock.return_value = (
             np.array([0.5, 0.5]),  # optim_weights
             0.0,  # beta

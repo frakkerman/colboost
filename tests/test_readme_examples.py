@@ -8,7 +8,7 @@ def test_fit_and_compute_margins():
     X, y = make_classification(n_samples=200, n_features=20, random_state=0)
     y = 2 * y - 1  # Convert labels from {0, 1} to {-1, +1}
 
-    model = EnsembleClassifier(solver="nm_boost", max_iter=10)
+    model = EnsembleClassifier(solver="lp_boost", max_iter=10)
     model.fit(X, y)
 
     # Ensure model is fitted
@@ -31,7 +31,7 @@ def test_reweight_ensemble_with_adaboost():
     ada = AdaBoostClassifier(n_estimators=10, random_state=0)
     ada.fit(X, y)
 
-    model = EnsembleClassifier(solver="nm_boost")
+    model = EnsembleClassifier(solver="lp_boost")
     model.reweight_ensemble(X, y, learners=ada.estimators_)
 
     # Ensure correct number of learners

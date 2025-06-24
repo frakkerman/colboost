@@ -35,6 +35,9 @@ dependencies = [
 dev = ["pytest"]
 test = ["pytest"]
 
+[tool.setuptools]
+packages = { find = {} }
+
 [tool.setuptools.package-data]
 colboost = ["py.typed"]
 

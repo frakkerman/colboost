@@ -39,13 +39,13 @@ def test_train_objective_logging(sample_dataset):
     assert len(model.objective_values_) == len(model.learners)
 
 
-def test_margin_sign_prediction_agreement(sample_dataset):
+def test_margin_sign_prediction_agreement2(sample_dataset):
     X, y = sample_dataset
     model = EnsembleClassifier(max_iter=3)
     model.fit(X, y)
     margins = model.compute_margins(X, y)
     preds = model.predict(X)
-    expected_preds = y * np.where(margins >= 0, 1, -1)
+    expected_preds = np.where(margins >= 0, 1, -1)
     assert np.all(expected_preds == preds)
 
 

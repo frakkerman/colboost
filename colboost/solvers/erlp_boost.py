@@ -1,9 +1,9 @@
 import numpy as np
 import math
 import logging
-from typing import Optional, Tuple
+from typing import List
 from gurobipy import GRB, Model
-from colboost.solvers.solver import Solver
+from colboost.solvers.solver import Solver, SolveResult
 
 logger = logging.getLogger(__name__)
 
@@ -23,85 +23,52 @@ class ERLPBoost(Solver):
 
     def solve(
         self,
-        predictions: list[np.ndarray],
+        predictions: List[np.ndarray],
         y_train: np.ndarray,
         hyperparam: float,
         time_limit: int,
         num_threads: int,
         seed: int,
-    ) -> Tuple[
-        Optional[np.ndarray],
-        Optional[float],
-        Optional[np.ndarray],
-        Optional[float],
-        Optional[float],
-    ]:
+    ) -> SolveResult:
         data_size = len(y_train)
-
         dist = np.full(data_size, 1 / data_size)
+
         ln_n = math.log(data_size)
-        half_tol = 1e-4  # could be exposed as arg
+        half_tol = 1e-4
         eta = max(0.5, ln_n / half_tol)
         max_iter = int(max(4.0 / half_tol, (8.0 * ln_n / (half_tol**2))))
 
         gamma_hat = 1.0
         total_solve_time = 0.0
-        objval = None
         margin_constraints = []
 
         with Model(env=self.env) as model:
-            model.Params.OutputFlag = 0
-            model.Params.Threads = num_threads
-            model.Params.Seed = seed
-            model.Params.NumericFocus = 3
-            model.Params.TimeLimit = time_limit
+            self.set_gurobi_params(model, time_limit, num_threads, seed)
 
-            gamma = model.addVar(
-                lb=-GRB.INFINITY, vtype=GRB.CONTINUOUS, name="gamma"
+            gamma, dist_vars = self._add_variables(
+                model, data_size, hyperparam
             )
-            dist_vars = model.addVars(
-                data_size,
-                lb=0.0,
-                ub=1.0 / hyperparam,
-                vtype=GRB.CONTINUOUS,
-                name="dist",
-            )
-
-            model.addConstr(
-                sum(dist_vars[i] for i in range(data_size)) == 1,
-                name="sum_to_1",
-            )
+            self._add_normalization_constraint(model, dist_vars)
 
             for iteration in range(max_iter):
-                for j, preds in enumerate(predictions):
-                    margin_expr = sum(
-                        dist_vars[i] * y_train[i] * preds[i]
-                        for i in range(data_size)
-                    )
-                    margin_constraints.append(
-                        model.addConstr(
-                            margin_expr <= gamma, name=f"margin_{j}"
-                        )
-                    )
-
-                EPSILON = 1e-9
-                entropy = sum(
-                    dist_vars[i]
-                    * (
-                        math.log(dist[i] + EPSILON)
-                        + (dist_vars[i] - dist[i]) / (dist[i] + EPSILON)
-                    )
-                    for i in range(data_size)
+                self._add_margin_constraints(
+                    model,
+                    predictions,
+                    y_train,
+                    dist_vars,
+                    gamma,
+                    margin_constraints,
                 )
 
-                model.setObjective(gamma + entropy / eta, GRB.MINIMIZE)
+                entropy_expr = self._compute_entropy(dist_vars, dist)
+                model.setObjective(gamma + entropy_expr / eta, GRB.MINIMIZE)
                 model.optimize()
 
                 if model.status != GRB.OPTIMAL:
                     logger.warning(
-                        "Gurobi failed to find an optimal solution."
+                        f"Gurobi failed to find an optimal solution (status: {model.status})"
                     )
-                    return None, None, None, None, None
+                    return SolveResult(None, None, None, None, None)
 
                 dist_new = np.array([dist_vars[i].X for i in range(data_size)])
                 total_solve_time += model.Runtime
@@ -114,17 +81,63 @@ class ERLPBoost(Solver):
                     )
                     for preds in predictions
                 ]
-                gamma_star = max(edges) + float(entropy.getValue()) / eta
+                gamma_star = max(edges) + float(entropy_expr.getValue()) / eta
                 gamma_hat = min(gamma_hat, objval)
+
                 if gamma_hat - gamma_star <= half_tol:
                     break
 
                 dist = dist_new
 
-            model.optimize()
-
             alpha = np.array([dist_vars[i].X for i in range(data_size)])
-            lp_weights = np.abs(np.array([c.Pi for c in margin_constraints]))
+            weights = np.abs(np.array([c.Pi for c in margin_constraints]))
             beta = 0.0
 
-            return alpha, beta, lp_weights, objval, total_solve_time
+            return SolveResult(
+                alpha=alpha,
+                beta=beta,
+                weights=weights,
+                obj_val=objval,
+                solve_time=total_solve_time,
+            )
+
+    def _add_variables(self, model, data_size: int, hyperparam: float):
+        gamma = model.addVar(
+            lb=-GRB.INFINITY, vtype=GRB.CONTINUOUS, name="gamma"
+        )
+        dist_vars = model.addVars(
+            data_size,
+            lb=0.0,
+            ub=1.0 / hyperparam,
+            vtype=GRB.CONTINUOUS,
+            name="dist",
+        )
+        return gamma, dist_vars
+
+    def _add_normalization_constraint(self, model, dist_vars):
+        model.addConstr(
+            sum(dist_vars[i] for i in dist_vars) == 1, name="sum_to_1"
+        )
+
+    def _add_margin_constraints(
+        self, model, predictions, y_train, dist_vars, gamma, constraints
+    ):
+        data_size = len(y_train)
+        for j, preds in enumerate(predictions):
+            margin_expr = sum(
+                dist_vars[i] * y_train[i] * preds[i] for i in range(data_size)
+            )
+            constraints.append(
+                model.addConstr(margin_expr <= gamma, name=f"margin_{j}")
+            )
+
+    def _compute_entropy(self, dist_vars, dist: np.ndarray):
+        EPSILON = 1e-9
+        return sum(
+            dist_vars[i]
+            * (
+                math.log(dist[i] + EPSILON)
+                + (dist_vars[i] - dist[i]) / (dist[i] + EPSILON)
+            )
+            for i in dist_vars
+        )

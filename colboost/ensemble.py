@@ -16,7 +16,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(
         self,
-        solver="nm_boost",
+        solver="lp_boost",
         base_estimator=None,
         max_depth=1,
         max_iter=100,
@@ -92,7 +92,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 logger.warning("Dual constraint not satisfied. Stopping.")
                 break
 
-            alpha, beta, optim_weights, objval, solve_time = self.solver.solve(
+            result = self.solver.solve(
                 predictions=pred_matrix,
                 y_train=y,
                 hyperparam=self.tradeoff_hyperparam,
@@ -101,22 +101,24 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 seed=self.seed,
             )
 
-            self.objective_values_.append(objval)
-            self.solve_times_.append(solve_time)
+            self.objective_values_.append(result.obj_val)
+            self.solve_times_.append(result.solve_time)
 
-            train_preds = np.sign(np.dot(optim_weights, np.array(pred_matrix)))
+            train_preds = np.sign(
+                np.dot(result.weights, np.array(pred_matrix))
+            )
             acc = np.mean(train_preds == y)
             self.train_accuracies_.append(acc)
 
-            if alpha is None or beta is None:
+            if result.alpha is None or beta is None:
                 logger.warning("Solver failed. Stopping.")
                 break
 
-            sample_weights = alpha
+            sample_weights = result.alpha
             self.learners.append(clf)
-            self.weights = optim_weights
+            self.weights = result.weights
 
-            z_diff = prev_obj - objval
+            z_diff = prev_obj - result.obj_val
             if (
                 (it + 1) % self.obj_check == 0
                 and z_diff <= self.obj_eps
@@ -127,7 +129,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 )
                 break
 
-            prev_obj = objval
+            prev_obj = result.obj_val
 
         self.n_iter_ = len(self.learners)
         self.classes_ = np.unique(y)
@@ -163,7 +165,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             create_predictions(clf, X, self.use_crb) for clf in learners
         ]
 
-        alpha, beta, optim_weights, objval, solve_time = self.solver.solve(
+        result = self.solver.solve(
             predictions=pred_matrix,
             y_train=y,
             hyperparam=self.tradeoff_hyperparam,
@@ -172,15 +174,15 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             seed=self.seed,
         )
 
-        if optim_weights is None:
+        if result.weights is None:
             raise RuntimeError("Solver failed to reweight the ensemble.")
 
-        self.weights = optim_weights
-        self.objective_values_ = [objval]
-        self.solve_times_ = [solve_time]
+        self.weights = result.weights
+        self.objective_values_ = [result.obj_val]
+        self.solve_times_ = [result.solve_time]
 
         # Compute and store training accuracy
-        train_preds = np.sign(np.dot(optim_weights, np.array(pred_matrix)))
+        train_preds = np.sign(np.dot(result.weights, np.array(pred_matrix)))
         acc = np.mean(train_preds == y)
         self.train_accuracies_ = [acc]
 
