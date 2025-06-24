@@ -56,7 +56,7 @@ class QRLPBoost(Solver):
         gamma = float("inf")
 
         ln_n_sample = math.log(data_size)
-        half_tol = 1e-4
+        half_tol = 0.99/2.0
         eta = max(0.5, ln_n_sample / half_tol)
 
         with Model(env=self.env) as model:

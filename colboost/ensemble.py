@@ -102,6 +102,10 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 seed=self.seed,
             )
 
+            if result.alpha is None or result.beta is None:
+                logger.warning("Solver failed. Stopping.")
+                break
+
             self.objective_values_.append(result.obj_val)
             self.solve_times_.append(result.solve_time)
 
@@ -110,10 +114,6 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             )
             acc = np.mean(train_preds == y)
             self.train_accuracies_.append(acc)
-
-            if result.alpha is None or result.beta is None:
-                logger.warning("Solver failed. Stopping.")
-                break
 
             sample_weights = result.alpha
             beta = result.beta

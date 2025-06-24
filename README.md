@@ -81,3 +81,28 @@ print("Solver used:", model.model_name_)
 margins = model.compute_margins(X, y)
 print("First 5 margins (y * f(x)):", margins[:5])
 ```
+
+## Contributing
+
+If you have proposed extensions to this codebase, feel free to do a pull request! If you experience issues, please open an issue in GitHub and provide a clear explanation.
+
+## Citation
+
+When using the code or data in this repo, please cite the following work:
+
+```
+@misc{akkerman2025_lpboosting,
+      title={Learning Dynamic Selection and Pricing of Out-of-Home Deliveries}, 
+      author={Fabian Akkerman and Julien Ferry and Christian Artigues and Emmanuel Hébrard and Thibaut Vidal},
+      year={2025},
+      eprint={2311.13983},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+```
+
+**Note:** This library is a reimplementation of the original code from the paper. While we have carefully validated the implementation, there may be minor discrepancies in results compared to those reported in the paper.
+
+## License
+* [MIT license](https://opensource.org/license/mit/)
+* Copyright 2025 © Fabian Akkerman, Julien Ferry, Christian Artigues, Emmanuel Hébrard, Thibaut Vidal
