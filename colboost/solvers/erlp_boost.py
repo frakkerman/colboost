@@ -7,6 +7,7 @@ from colboost.solvers.solver import Solver, SolveResult
 
 logger = logging.getLogger("colboost.solver")
 
+
 class ERLPBoost(Solver):
     """
     Implements Entropy Regularized LPBoost (Warmuth et al., 2008).
@@ -56,7 +57,7 @@ class ERLPBoost(Solver):
         dist = np.full(data_size, 1 / data_size)
 
         ln_n = math.log(data_size)
-        half_tol = 0.99/2.0
+        half_tol = 0.99 / 2.0
         eta = max(0.5, ln_n / half_tol)
         max_iter = int(max(4.0 / half_tol, (8.0 * ln_n / (half_tol**2))))
 

@@ -9,6 +9,7 @@ from colboost.utils.predictions import create_predictions
 
 logger = logging.getLogger("colboost.ensemble")
 
+
 class EnsembleClassifier(BaseEstimator, ClassifierMixin):
     """
     Ensemble classifier using column generation and LP-based solvers like LPBoost.
@@ -120,9 +121,16 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             self.learners.append(clf)
             self.weights = result.weights
 
-            if self.early_stopping and len(self.train_accuracies_) >= 2 * self.obj_check:
-                recent_avg = np.mean(self.train_accuracies_[-self.obj_check:])
-                prev_avg = np.mean(self.train_accuracies_[-2 * self.obj_check:-self.obj_check])
+            if (
+                self.early_stopping
+                and len(self.train_accuracies_) >= 2 * self.obj_check
+            ):
+                recent_avg = np.mean(self.train_accuracies_[-self.obj_check :])
+                prev_avg = np.mean(
+                    self.train_accuracies_[
+                        -2 * self.obj_check : -self.obj_check
+                    ]
+                )
                 delta_acc = recent_avg - prev_avg
 
                 if delta_acc < self.obj_eps:
@@ -131,9 +139,11 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                     )
                     break
 
-            progress.set_postfix({
-                "train acc": f"{acc:.3f}",
-            })
+            progress.set_postfix(
+                {
+                    "train acc": f"{acc:.3f}",
+                }
+            )
 
         self.n_iter_ = len(self.learners)
         self.classes_ = np.unique(y)

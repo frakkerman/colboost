@@ -6,6 +6,7 @@ from colboost.solvers.solver import Solver, SolveResult
 
 logger = logging.getLogger("colboost.solver")
 
+
 class MDBoost(Solver):
     """
     Implements MDBoost (Margin Distribution Boosting, Shen & Li 2009).
@@ -74,7 +75,7 @@ class MDBoost(Solver):
                 weights,
                 margin_constraints,
                 constraint_type="clipped",
-                sum_constraint=sum_constraint
+                sum_constraint=sum_constraint,
             )
 
     def _add_variables(self, model, forest_size: int, data_size: int):
@@ -126,4 +127,3 @@ class MDBoost(Solver):
 
         linear_term = sum(rho[i] for i in rho)  # 1^T rho
         model.setObjective(linear_term - quad_term, GRB.MAXIMIZE)
-

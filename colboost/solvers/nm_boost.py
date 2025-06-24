@@ -68,7 +68,7 @@ class NMBoost(Solver):
                 acc_constraints,
                 constraint_type="nm_boost",
                 neg_constraints=neg_margin_constraints,
-                sum_constraint=sum_constraint
+                sum_constraint=sum_constraint,
             )
 
     def _add_variables(self, model, forest_size: int, data_size: int):

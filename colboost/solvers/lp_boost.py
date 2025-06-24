@@ -3,6 +3,7 @@ from typing import List
 from gurobipy import GRB, Model
 from colboost.solvers.solver import Solver, SolveResult
 
+
 class LPBoost(Solver):
     """
     Implements LPBoost (Demiriz et al., 2002), soft-margin variant.
@@ -70,7 +71,7 @@ class LPBoost(Solver):
                 acc_constraints,
                 predictions=predictions,
                 y_train=y_train,
-                constraint_type="non_clipped"
+                constraint_type="non_clipped",
             )
 
     def _add_variables(self, model, forest_size: int, data_size: int):

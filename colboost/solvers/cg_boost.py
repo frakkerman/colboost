@@ -71,7 +71,7 @@ class CGBoost(Solver):
                 acc_constraints,
                 predictions=predictions,
                 y_train=y_train,
-                constraint_type="clipped"
+                constraint_type="clipped",
             )
 
     def _add_variables(self, model, forest_size: int, data_size: int):

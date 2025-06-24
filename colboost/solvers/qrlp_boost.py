@@ -7,6 +7,7 @@ from colboost.solvers.solver import Solver, SolveResult
 
 logger = logging.getLogger("colboost.solver")
 
+
 class QRLPBoost(Solver):
     """
     Implements QRLPBoost: a method inspired by ERLP-Boost.
@@ -56,7 +57,7 @@ class QRLPBoost(Solver):
         gamma = float("inf")
 
         ln_n_sample = math.log(data_size)
-        half_tol = 0.99/2.0
+        half_tol = 0.99 / 2.0
         eta = max(0.5, ln_n_sample / half_tol)
 
         with Model(env=self.env) as model:
