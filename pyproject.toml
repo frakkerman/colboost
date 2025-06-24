@@ -28,7 +28,8 @@ dependencies = [
     "numpy",
     "scikit-learn",
     "gurobipy",
-    "pandas"
+    "pandas",
+    "tqdm"
 ]
 
 [project.optional-dependencies]

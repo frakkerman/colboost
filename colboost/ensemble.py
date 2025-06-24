@@ -1,5 +1,6 @@
 import logging
 import numpy as np
+from tqdm import trange
 from sklearn.base import BaseEstimator, ClassifierMixin, clone
 from sklearn.tree import DecisionTreeClassifier
 from colboost.solvers import get_solver
@@ -76,7 +77,8 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         prev_obj = float("inf")
         pred_matrix = []
 
-        for it in range(self.max_iter):
+        progress = trange(self.max_iter, desc="Boosting Progress")
+        for it in progress:
             if self.base_estimator is not None:
                 clf = clone(self.base_estimator)
             else:
@@ -130,6 +132,10 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 break
 
             prev_obj = result.obj_val
+
+            progress.set_postfix({
+                "train acc": f"{acc:.3f}",
+            })
 
         self.n_iter_ = len(self.learners)
         self.classes_ = np.unique(y)
