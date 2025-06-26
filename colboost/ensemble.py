@@ -13,6 +13,46 @@ logger = logging.getLogger("colboost.ensemble")
 class EnsembleClassifier(BaseEstimator, ClassifierMixin):
     """
     Ensemble classifier using column generation and LP-based solvers like LPBoost.
+    Parameters
+    ----------
+    solver : str, default="nm_boost"
+        Which formulation to use. Options: "nm_boost", "cg_boost", "erlp_boost", "lp_boost", "md_boost", "qrlp_boost"
+
+    base_estimator : object, optional
+        Optional base estimator (defaults to CART decision tree if not provided).
+
+    max_depth : int, default=1
+        Maximum depth of individual trees.
+
+    max_iter : int, default=100
+        Maximum number of boosting iterations.
+
+    use_crb : bool, default=False
+        Whether to use confidence rated boosting, using soft-voting.
+
+    check_dual_const : bool, default=True
+        Whether to check dual feasibility in each iteration.
+
+    early_stopping : bool, default=True
+        Stop boosting early if no improvement is observed.
+
+    acc_eps : float, default=1e-4
+        Tolerance for accuracy-based stopping criteria.
+
+    acc_check_interval : int, default=5
+        How often (in iterations) to check accuracy for early stopping.
+
+    gurobi_time_limit : int, default=60
+        Time limit (in seconds) for each Gurobi solve.
+
+    gurobi_num_threads : int, default=1
+        Number of threads Gurobi uses.
+
+    tradeoff_hyperparam : float, default=1e-2
+        Trade-off parameter for regularization.
+
+    seed : int, default=1
+        Random seed for reproducibility.
     """
 
     def __init__(
