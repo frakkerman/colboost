@@ -62,7 +62,6 @@ class ERLPBoost(Solver):
 
         gamma_hat = 1.0
         total_solve_time = 0.0
-        margin_constraints = []
 
         with Model(env=self.env) as model:
             self.set_gurobi_params(model, time_limit, num_threads, seed)
@@ -74,6 +73,7 @@ class ERLPBoost(Solver):
             self._add_normalization_constraint(model, dist_vars)
 
             for iteration in range(max_iter):
+                margin_constraints = []
                 self._add_margin_constraints(
                     model,
                     predictions,
