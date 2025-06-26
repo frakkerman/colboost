@@ -35,21 +35,21 @@ pip install --upgrade pip setuptools
 
 ### Available Parameters
 
-| Parameter | Default | Description |
-|---|---|---|
+| Parameter | Default | Description                                                                                                                |
+|---|---|----------------------------------------------------------------------------------------------------------------------------|
 | `solver` | `"nm_boost"` | Which formulation to use. Options: `"nm_boost"`, `"cg_boost"`, `"erlp_boost"`, `"lp_boost"`, `"md_boost"`, `"qrlp_boost"`. |
-| `base_estimator` | `None` | Optional base estimator (defaults to CART decision tree if not provided). |
-| `max_depth` | `1` | Maximum depth of individual trees. |
-| `max_iter` | `100` | Maximum number of boosting iterations. |
-| `use_crb` | `False` | Whether to use confidence-rated boosting (soft-voting). |
-| `check_dual_const` | `True` | Whether to check dual feasibility in each iteration. |
-| `early_stopping` | `True` | Stop boosting early if no improvement is observed. |
-| `acc_eps` | `1e-4` | Tolerance for accuracy-based stopping criteria. |
-| `acc_check_interval` | `5` | How often (in iterations) to check accuracy for early stopping. |
-| `gurobi_time_limit` | `60` | Time limit (in seconds) for each Gurobi solve. |
-| `gurobi_num_threads` | `1` | Number of threads Gurobi uses. |
-| `tradeoff_hyperparam` | `1e-2` | Trade-off parameter for regularization. |
-| `seed` | `1` | Random seed for reproducibility. |
+| `base_estimator` | `None` | Optional base estimator (defaults to CART decision tree if not provided).                                                  |
+| `max_depth` | `1` | Maximum depth of individual trees (only relevant when using default, `base_estimator=None`).                               |
+| `max_iter` | `100` | Maximum number of boosting iterations.                                                                                     |
+| `use_crb` | `False` | Whether to use confidence-rated boosting (soft-voting, only applicable when using tree-based `base_estimator`).              |
+| `check_dual_const` | `True` | Whether to check dual feasibility in each iteration.                                                                       |
+| `early_stopping` | `True` | Stop boosting early if no improvement is observed.                                                                         |
+| `acc_eps` | `1e-4` | Tolerance for accuracy-based stopping criteria.                                                                            |
+| `acc_check_interval` | `5` | How often (in iterations) to check accuracy for early stopping.                                                            |
+| `gurobi_time_limit` | `60` | Time limit (in seconds) for each Gurobi solve.                                                                             |
+| `gurobi_num_threads` | `1` | Number of threads Gurobi uses.                                                                                             |
+| `tradeoff_hyperparam` | `1e-2` | Trade-off parameter for regularization.                                                                                    |
+| `seed` | `1` | Random seed for reproducibility.                                                                                           |
 
 
 ## Example 1: fitting an ensemble

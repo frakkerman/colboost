@@ -22,13 +22,13 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         Optional base estimator (defaults to CART decision tree if not provided).
 
     max_depth : int, default=1
-        Maximum depth of individual trees.
+        Maximum depth of individual trees (only relevant when using default, `base_estimator=None`)
 
     max_iter : int, default=100
         Maximum number of boosting iterations.
 
     use_crb : bool, default=False
-        Whether to use confidence rated boosting, using soft-voting.
+        Whether to use confidence rated boosting, using soft-voting (only applicable for tree-based `base_estimator`).
 
     check_dual_const : bool, default=True
         Whether to check dual feasibility in each iteration.
