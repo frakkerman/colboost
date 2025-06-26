@@ -17,19 +17,19 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(
         self,
-        solver="lp_boost",
+        solver="nm_boost",
         base_estimator=None,
         max_depth=1,
         max_iter=100,
         use_crb=False,
-        check_dual_const=False,
-        early_stopping=False,
-        obj_eps=1e-4,
-        obj_check=5,
+        check_dual_const=True,
+        early_stopping=True,
+        acc_eps=1e-4,
+        acc_check_interval=5,
         gurobi_time_limit=60,
         gurobi_num_threads=1,
-        seed=0,
         tradeoff_hyperparam=1e-2,
+        seed=1,
     ):
         self.solver = solver
         self.base_estimator = base_estimator
@@ -37,8 +37,8 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         self.max_iter = max_iter
         self.use_crb = use_crb
         self.check_dual_const = check_dual_const
-        self.obj_eps = obj_eps
-        self.obj_check = obj_check
+        self.acc_eps = acc_eps
+        self.acc_check_interval = acc_check_interval
         self.early_stopping = early_stopping
         self.gurobi_time_limit = gurobi_time_limit
         self.gurobi_num_threads = gurobi_num_threads
@@ -91,7 +91,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
 
             dual_sum = np.dot(sample_weights * y, preds)
             if dual_sum <= beta and self.check_dual_const:
-                logger.warning("Dual constraint not satisfied. Stopping.")
+                logger.info("Optimal solution (according to dual criterion) found. Stopping.")
                 break
 
             result = self.solver.solve(
@@ -104,7 +104,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             )
 
             if result.alpha is None or result.beta is None:
-                logger.warning("Solver failed. Stopping.")
+                logger.warning("No feasible solution found. Stopping.")
                 break
 
             self.objective_values_.append(result.obj_val)
@@ -123,19 +123,20 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
 
             if (
                 self.early_stopping
-                and len(self.train_accuracies_) >= 2 * self.obj_check
+                and len(self.train_accuracies_) >= 2 * self.acc_check_interval
             ):
-                recent_avg = np.mean(self.train_accuracies_[-self.obj_check :])
+                recent_avg = np.mean(self.train_accuracies_[-self.acc_check_interval :])
                 prev_avg = np.mean(
                     self.train_accuracies_[
-                        -2 * self.obj_check : -self.obj_check
+                        -2 * self.acc_check_interval : -self.acc_check_interval
                     ]
                 )
                 delta_acc = recent_avg - prev_avg
 
-                if delta_acc < self.obj_eps:
+                if delta_acc < self.acc_eps:
+                    progress.close()
                     logger.info(
-                        f"Early stopping at iteration {it + 1}: Δacc={delta_acc:.6f} < obj_eps={self.obj_eps}"
+                        f"Early stopping at iteration {it + 1}: Δacc={delta_acc:.6f} < obj_eps={self.acc_eps}"
                     )
                     break
 

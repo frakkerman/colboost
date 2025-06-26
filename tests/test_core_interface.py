@@ -39,20 +39,21 @@ def test_train_objective_logging(sample_dataset):
     assert len(model.objective_values_) == len(model.learners)
 
 
-def test_margin_sign_prediction_agreement2(sample_dataset):
+def test_margin_sign_prediction_agreement(sample_dataset):
     X, y = sample_dataset
-    model = EnsembleClassifier(max_iter=3)
+    model = EnsembleClassifier(max_iter=3, check_dual_const=False)
     model.fit(X, y)
     margins = model.compute_margins(X, y)
     preds = model.predict(X)
-    expected_preds = np.where(margins >= 0, 1, -1)
+    f_x = np.divide(margins, y, out=np.zeros_like(margins), where=y != 0)
+    expected_preds = np.where(f_x >= 0, 1, -1)
     assert np.all(expected_preds == preds)
 
 
 def test_early_stopping(sample_dataset):
     X, y = sample_dataset
     model = EnsembleClassifier(
-        max_iter=10, obj_check=2, obj_eps=1e-5, early_stopping=True
+        max_iter=10, acc_check_interval=2, acc_eps=1e-5, early_stopping=True
     )
     model.fit(X, y)
     assert len(model.learners) < model.max_iter
