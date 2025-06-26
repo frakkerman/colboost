@@ -91,7 +91,9 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
 
             dual_sum = np.dot(sample_weights * y, preds)
             if dual_sum <= beta and self.check_dual_const:
-                logger.info("Optimal solution (according to dual criterion) found. Stopping.")
+                logger.info(
+                    "Optimal solution (according to dual criterion) found. Stopping."
+                )
                 break
 
             result = self.solver.solve(
@@ -125,7 +127,9 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 self.early_stopping
                 and len(self.train_accuracies_) >= 2 * self.acc_check_interval
             ):
-                recent_avg = np.mean(self.train_accuracies_[-self.acc_check_interval :])
+                recent_avg = np.mean(
+                    self.train_accuracies_[-self.acc_check_interval :]
+                )
                 prev_avg = np.mean(
                     self.train_accuracies_[
                         -2 * self.acc_check_interval : -self.acc_check_interval
