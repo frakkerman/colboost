@@ -5,7 +5,7 @@
 ![Python Version](https://img.shields.io/badge/python-%3E=3.11-blue)
 
 
-**colboost** is a Python library for training ensemble classifiers using linear programming (LP) based boosting methods such as LPBoost. Each iteration fits a weak learner and solves a mathematical program to determine optimal ensemble weights. The implementation is compatible with scikit-learn and supports any scikit-learn-compatible base learner. Currently, the library only supports binary classification.
+**colboost** is a Python library for training ensemble classifiers using mathematical programming based boosting methods such as LPBoost. Each iteration fits a weak learner and solves a mathematical program to determine optimal ensemble weights. The implementation is compatible with scikit-learn and supports any scikit-learn-compatible base learner. Currently, the library only supports binary classification.
 
 ## Installation
 
