@@ -1,4 +1,4 @@
-# colboost: LP-Based Boosting with Column Generation
+# colboost: Ensemble Boosting with Column Generation
 
 [![Tests](https://github.com/frakkerman/colboost/actions/workflows/test.yml/badge.svg)](https://github.com/frakkerman/colboost/actions/workflows/test.yml)
 [![License](https://img.shields.io/github/license/frakkerman/colboost)](https://github.com/frakkerman/colboost/blob/master/LICENSE)
