@@ -160,7 +160,7 @@ When using the code or data in this repo, please cite the following work:
 ```
 
 **Note:** This library is a clean reimplementation of the original code from the paper. While we have carefully validated the implementation, there may be minor discrepancies in results compared to those reported in the paper. 
-For full reproducibility, we provide a separate repository containing the exact codebase used for the paper, along with all result files, including tested hyperparameter configurations and results not shown in the paper. **add url later**
+For full reproducibility, we provide a separate repository containing the exact codebase used for the paper, along with all result files, including tested hyperparameter configurations and results not shown in the paper. **url will be added after acceptance**
 
 - **[MIT license](http://opensource.org/licenses/mit-license.php)**
 - Copyright 2025 © Fabian Akkerman, Julien Ferry, Christian Artigues, Emmanuel Hébrard, Thibaut Vidal
