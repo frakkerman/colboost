@@ -9,29 +9,15 @@
 
 ## Installation
 
+colboost is available via PyPI:
+
+```bash
+pip install colboost
+```
+
 This project requires the Gurobi solver. Free academic licenses are available:
 
 https://www.gurobi.com/academia/academic-program-and-licenses/
-
-To install:
-
-```bash
-python3 -m venv env
-source env/bin/activate
-pip install -e .
-```
-
-To verify the installation, in the root execute:
-
-```bash
-pytest
-```
-
-**Note:** the install requires recent versions of pip and of the setuptools library. If needed, update both using:
-
-```bash
-pip install --upgrade pip setuptools
-```
 
 ### Available Parameters
 
@@ -140,6 +126,25 @@ print("First 5 margins (y * f(x)):", margins[:5])
   Entropy-Regularized LPBoost using KL-divergence between successive distributions.  
   [Warmuth, Glocer, Vishwanathan (2008)](https://doi.org/10.1007/978-3-540-87987-9_23)
 
+## Installation (developers)
+
+```bash
+python3 -m venv env
+source env/bin/activate
+pip install -e .
+```
+
+To verify the installation, in the root execute:
+
+```bash
+pytest
+```
+
+**Note:** the install requires recent versions of pip and of the setuptools library. If needed, update both using:
+
+```bash
+pip install --upgrade pip setuptools
+```
 
 ## Contributing
 
