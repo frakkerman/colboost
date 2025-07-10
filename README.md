@@ -128,7 +128,7 @@ print("First 5 margins (y * f(x)):", margins[:5])
 
 ## Installation (developers)
 
-To install in development mode (editable install):
+To install in development mode, clone this repo and:
 
 ```bash
 python3 -m venv env
