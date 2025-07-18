@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import trange
 from sklearn.base import BaseEstimator, ClassifierMixin, clone
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.utils.validation import has_fit_parameter
 from colboost.solvers import get_solver
 from colboost.utils.predictions import create_predictions
 
@@ -321,6 +322,10 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         if not hasattr(learner, "predict") or not callable(learner.predict):
             raise TypeError(
                 f"Base learner must implement `predict()`, got: {type(learner).__name__}"
+            )
+        if not has_fit_parameter(learner, "sample_weight"):
+            raise TypeError(
+                f"Base learner {type(learner).__name__} must support `fit(X, y, sample_weight=...)`."
             )
         if self.use_crb and (
             not hasattr(learner, "predict_proba")
