@@ -3,9 +3,9 @@ import numpy as np
 from tqdm import trange
 from sklearn.base import BaseEstimator, ClassifierMixin, clone
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.utils.validation import has_fit_parameter
 from colboost.solvers import get_solver
 from colboost.utils.predictions import create_predictions
+from colboost.utils.validate import validate_base_learner, validate_inputs
 
 
 logger = logging.getLogger("colboost.ensemble")
@@ -109,7 +109,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
             Fitted estimator.
         """
         self.solver = get_solver(self.solver)
-        X, y = self._validate_inputs(X, y)
+        X, y = validate_inputs(X, y)
         self.learners = []
         self.weights = None
         beta = 0.0
@@ -124,7 +124,7 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
                 clf = clone(self.base_estimator)
             else:
                 clf = DecisionTreeClassifier(max_depth=self.max_depth)
-            self._validate_base_learner(clf)
+            validate_base_learner(clf, self.use_crb)
 
             clf.fit(X, y, sample_weight=sample_weights)
             preds = create_predictions(clf, X, self.use_crb)
@@ -215,8 +215,8 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         """
         if not learners:
             raise ValueError("List of learners must be non-empty.")
-        self._validate_base_learner(learners[0])
-        X, y = self._validate_inputs(X, y)
+        validate_base_learner(learners[0], self.use_crb)
+        X, y = validate_inputs(X, y)
 
         self.solver = get_solver(self.solver)
 
@@ -282,12 +282,6 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         y_pred = self.predict(X)
         return np.mean(y_pred == y)
 
-    @property
-    def model_name_(self):
-        if hasattr(self.solver, "__class__"):
-            return self.solver.__class__.__name__
-        return str(self.solver)
-
     def compute_margins(self, X, y):
         """
         Computes margin distribution y * f(x) for input data.
@@ -314,44 +308,8 @@ class EnsembleClassifier(BaseEstimator, ClassifierMixin):
         aggregated = np.dot(self.weights, pred_matrix)
         return y * aggregated
 
-    def _validate_base_learner(self, learner):
-        if not hasattr(learner, "fit") or not callable(learner.fit):
-            raise TypeError(
-                f"Base learner must implement `fit()`, got: {type(learner).__name__}"
-            )
-        if not hasattr(learner, "predict") or not callable(learner.predict):
-            raise TypeError(
-                f"Base learner must implement `predict()`, got: {type(learner).__name__}"
-            )
-        if not has_fit_parameter(learner, "sample_weight"):
-            raise TypeError(
-                f"Base learner {type(learner).__name__} must support `fit(X, y, sample_weight=...)`."
-            )
-        if self.use_crb and (
-            not hasattr(learner, "predict_proba")
-            or not callable(learner.predict_proba)
-        ):
-            logger.warning(
-                f"Learner {type(learner).__name__} has no `predict_proba`; using `predict()` instead."
-            )
-
-    def _validate_inputs(self, X, y):
-        X = np.asarray(X)
-        y = np.asarray(y)
-
-        if X.ndim != 2:
-            raise ValueError(f"X should be 2D (got shape {X.shape})")
-        if y.ndim != 1:
-            raise ValueError(f"y should be 1D (got shape {y.shape})")
-        if len(X) != len(y):
-            raise ValueError(
-                f"X and y must have the same number of samples (got {len(X)} and {len(y)})"
-            )
-        if not np.issubdtype(X.dtype, np.number):
-            raise TypeError(f"X must be numeric (got dtype {X.dtype})")
-        if np.isnan(X).any() or np.isnan(y).any():
-            raise ValueError("X and y must not contain NaN values")
-        if not np.all(np.isin(y, [-1, 1])):
-            raise ValueError("Only -1/+1 labels are supported.")
-
-        return X, y
+    @property
+    def model_name_(self):
+        if hasattr(self.solver, "__class__"):
+            return self.solver.__class__.__name__
+        return str(self.solver)
