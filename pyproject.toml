@@ -1,6 +1,6 @@
 [project]
 name = "colboost"
-version = "0.1.3"
+version = "0.1.4"
 description = "LP-based ensemble learning with column generation"
 authors = [
     { name = "Fabian Akkerman" },

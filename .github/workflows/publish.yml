@@ -1,4 +1,4 @@
-name: Release and Publish to Test PyPI
+name: Release and Publish to PyPI
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
             --generate-notes
 
   publish:
-    name: Publish to Test PyPI
+    name: Publish to PyPI
     needs: release
     runs-on: ubuntu-latest
     steps:
@@ -50,9 +50,8 @@ jobs:
         run: |
           python -m build
 
-      - name: Publish to Test PyPI
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@v1.5.0
         with:
           user: __token__
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+          password: ${{ secrets.PYPI_API_TOKEN }}
