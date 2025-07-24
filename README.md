@@ -1,7 +1,7 @@
 # colboost: Ensemble Boosting with Column Generation
 
 [![Tests](https://github.com/frakkerman/colboost/actions/workflows/test.yml/badge.svg)](https://github.com/frakkerman/colboost/actions/workflows/test.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frakkerman/colboost/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/frakkerman/colboost/blob/master/LICENSE)
 ![Python Version](https://img.shields.io/badge/python-%3E=3.9-blue)
 
 
