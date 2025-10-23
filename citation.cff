@@ -15,8 +15,19 @@ authors:
 preferred-citation:
   type: article
   title: "Boosting Revisited: Benchmarking and Advancing LP-Based Ensemble Methods"
+  authors:
+    - family-names: Akkerman
+      given-names: Fabian
+    - family-names: Ferry
+      given-names: Julien
+    - family-names: Artigues
+      given-names: Christian
+    - family-names: Hébrard
+      given-names: Emmanuel
+    - family-names: Vidal
+      given-names: Thibaut
   journal: "Transactions on Machine Learning Research"
   year: 2025
 version: "0.1.6"
 date-released: 2025-07-24
-repository-code: https://github.com/frakkerman/colboost
+repository-code: "https://github.com/frakkerman/colboost"
