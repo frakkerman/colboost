@@ -157,17 +157,17 @@ If you have proposed extensions to this codebase, feel free to do a pull request
 When using the code or data in this repo, please cite the following work:
 
 ```
-@misc{akkerman2025_lpboosting,
-      title={Boosting Revisited: Benchmarking and Advancing LP-Based Ensemble Methods}, 
-      author={Fabian Akkerman and Julien Ferry and Christian Artigues and Emmanuel Hébrard and Thibaut Vidal},
-      year={2025},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG}
+@article{akkerman2025boosting,
+    title={Boosting Revisited: Benchmarking and Advancing {LP}-Based Ensemble Methods},
+    author={Fabian Akkerman and Julien Ferry and Christian Artigues and Emmanuel Hébrard and Thibaut Vidal},
+    journal={Transactions on Machine Learning Research},
+    year={2025},
+    url={https://openreview.net/forum?id=lscC4PZUE4},
 }
 ```
 
 **Note:** This library is a clean reimplementation of the original code from the paper. While we have carefully validated the implementation, there may be minor discrepancies in results compared to those reported in the paper. 
-For full reproducibility, we provide a separate repository containing the exact codebase used for the paper, along with all result files, including tested hyperparameter configurations and results not shown in the paper. **url will be added after acceptance**
+For full reproducibility, we provide a separate repository containing the exact codebase used for the paper, along with all result files, including tested hyperparameter configurations and results not shown in the paper, see: https://doi.org/10.4121/f82dcdaa-fc94-43c5-b66d-02579bd3de4f.
 
 - **[MIT license](http://opensource.org/licenses/mit-license.php)**
 - Copyright 2025 © Fabian Akkerman, Julien Ferry, Christian Artigues, Emmanuel Hébrard, Thibaut Vidal
